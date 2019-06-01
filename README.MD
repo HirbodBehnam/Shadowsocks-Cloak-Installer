@@ -60,8 +60,6 @@ At first what is BBR?
 
 BBR or Bottleneck Bandwidth and Round-trip propagation time (BBR) is a TCP congestion control algorithm developed at Google in 2016. While most congestion control algorithms are loss-based, in that they rely on packet loss as a signal to lower rates of transmission, BBR is model-based. The algorithm uses the maximum bandwidth and round-trip time at which the network delivered the most recent flight of outbound data packets to build an explicit model of the network. Each cumulative or selective acknowledgment of packet delivery produces a rate sample which records the amount of data delivered over the time interval between the transmission of a data packet and the acknowledgment of that packet. As network interface controllers evolve from megabit per second to gigabit per second performance,[clarification needed] packet loss should no longer be considered the primary determining factor in identifying congestion, making model-based congestion control algorithms which provide higher throughput and lower latency, such as BBR, a more reliable alternative to more popular algorithms like CUBIC. [Source](https://en.wikipedia.org/wiki/TCP_congestion_control#TCP_BBR)
 #### How to setup BBR?
-
-
 The requirement to enable BBR is to have Linux Kernel 4.9 or higher. If you do, you can enable BBR like this:
 ```bash
 echo 'net.core.default_qdisc=fq' | sudo tee -a /etc/sysctl.conf
@@ -88,6 +86,5 @@ Here are some handy links to install BBR and upgrade kernel:
 Shadowsocks cannot natively route all traffic. You can use some apps like SocksCap or other stuff to route applications through shadowsocks.
 
 If you want a VPN you can use [wireguard](https://github.com/l-n-s/wireguard-install) or [openvpn](https://github.com/angristan/openvpn-install).
-### Donations
 ### Donations
 You can donate to me through bitcoin at `1XDgEkpnkJ7hC8Kwv5adfaDC1Z3FrkwsK`, Ethereum at `0xbb527a28B76235E1C125206B7CcFF944459b4894`, ZCash at `t1ZKYrYZCjxDYvo6mQaLZi3gNe2a6MydUo3` and Bitcoin Gold at `GcNgxfyR3nnAsD3Nhuckvq14sXYuDFkK9P`
