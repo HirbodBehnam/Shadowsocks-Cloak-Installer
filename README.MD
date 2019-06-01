@@ -30,7 +30,7 @@ arm, arm64, amd64 and i386 are supported.
 ### Installing 
 Copy and execute this command:
 ```
-curl -o Shadowsocks-Cloak-Installer.sh -L https://git.io/ && bash Shadowsocks-Cloak-Installer.sh
+curl -o Shadowsocks-Cloak-Installer.sh -L https://git.io/fjECg && bash Shadowsocks-Cloak-Installer.sh
 ```
 Answer questions and wait until the setup finishes installing. You can scan the QR Code after or use `ss://` link or even enter server config manually.
 ### Post-Install
