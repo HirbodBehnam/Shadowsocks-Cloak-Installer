@@ -29,7 +29,7 @@ arm, arm64, amd64 and i386 are supported.
 * Ubuntu 16.04.5 LTS Server amd64
 ### Installing 
 Copy and execute this command:
-```
+```bash
 curl -o Shadowsocks-Cloak-Installer.sh -L https://git.io/fjECg && bash Shadowsocks-Cloak-Installer.sh
 ```
 Answer questions and wait until the setup finishes installing. You can scan the QR Code after or use `ss://` link or even enter server config manually.
@@ -45,7 +45,7 @@ ss-local -s <SERVER_IP> -p <SERVER_PORT> -l 1080 -k <SERVER_PASSWORD> -m <ENCRYP
 ```
 You can connect to your shadowsocks with socks or http proxy set on localhost and 1080 port.
 ### iOS
-Unfortunately no iOS support! Use shadowsocks without plugin. [Here](https://github.com/teddysun/shadowsocks_install/tree/master) is a script that you can install shadowsocks without plugin on your server.
+Unfortunately cloak does not support iOS. (Most of the plugins does not work with iOS) Use shadowsocks without plugin. [Here](https://github.com/teddysun/shadowsocks_install/tree/master) is a script that you can install shadowsocks without plugin on your server.
 ### Windows
 At first install [shadowsocks windows](https://github.com/shadowsocks/shadowsocks-windows/releases). Then download cloak for windows from [here](https://github.com/cbeuw/Cloak/releases). If you are using a 32-bit system, download `ck-client-windows-386-X.exe
 ` if your system is 64-bit use `ck-client-windows-amd64-X.exe

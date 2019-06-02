@@ -47,7 +47,6 @@ if [ -d "/etc/shadowsocks-libev" ]; then
             echo "Cloak TicketTimeHint: Leave default(3600)"
             echo "Cloak NumConn:        4 or more"
             echo "Cloak MaskBrowser:    firewall or chrome"
-            echo "Rerun the script to get these configs again"
             echo "Also read more about these arguments at https://github.com/cbeuw/Cloak#client"
             echo
             echo "Download cloak client for android from https://github.com/cbeuw/Cloak-android/releases"
@@ -296,6 +295,7 @@ echo "{
 echo "$ckpub" >> /etc/shadowsocks-libev/ckpublickey.txt
 chmod 777 /etc/shadowsocks-libev
 #Service
+rm /etc/systemd/system/shadowsocks-server.service
 echo "[Unit]
 Description=Shadowsocks-libev Server Service
 Documentation=man:shadowsocks-libev(8)
