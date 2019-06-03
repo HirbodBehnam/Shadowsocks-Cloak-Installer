@@ -24,7 +24,7 @@ arm, arm64, amd64 and i386 are supported.
 #### Tested On
 * CentOS 7 Minimal amd64
 * Debian 8.11 Net install amd64
-* Debian 9.9 Net install amd64 (Could have some problems after rebooting. Restarting the service should fix it)
+* Debian 9.9 Net install amd64
 * Ubuntu 18.04 LTS Server amd64
 * Ubuntu 16.04.5 LTS Server amd64
 ### Installing 

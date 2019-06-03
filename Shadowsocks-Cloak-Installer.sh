@@ -229,18 +229,18 @@ if [[ $distro =~ "CentOS" ]]; then
 	dnf -y install 'dnf-command(copr)'
 	dnf -y copr enable librehat/shadowsocks
 	yum -y update
-	yum -y install shadowsocks-libev wget jq qrencode curl firewalld
+	yum -y install shadowsocks-libev wget jq qrencode curl firewalld haveged
     firewall-cmd --add-port="$PORT"/tcp
     firewall-cmd --permanent --add-port="$PORT"/tcp
 elif [[ $distro =~ "Ubuntu" ]]; then
     if [[ $(lsb_release -r -s) =~ "18" ]] || [[ $(lsb_release -r -s) =~ "19" ]]; then 
         apt update
-        apt -y install shadowsocks-libev wget jq qrencode curl ufw
+        apt -y install shadowsocks-libev wget jq qrencode curl ufw haveged
     else
         apt-get install software-properties-common -y
         add-apt-repository ppa:max-c-lv/shadowsocks-libev -y
         apt-get update
-        apt-get -y install shadowsocks-libev wget jq qrencode curl ufw
+        apt-get -y install shadowsocks-libev wget jq qrencode curl ufw haveged
     fi
     ufw allow "$PORT"/tcp
 elif [[ $distro =~ "Debian" ]]; then
@@ -259,7 +259,7 @@ elif [[ $distro =~ "Debian" ]]; then
         echo "Your debian is too old!"
         exit 2
     fi
-    apt -y install wget jq qrencode curl iptables-persistent iptables
+    apt -y install wget jq qrencode curl iptables-persistent iptables haveged
     #Firewall
     iptables -A INPUT -p tcp --dport "$PORT" --jump ACCEPT
     iptables-save > /etc/iptables/rules.v4  
@@ -306,6 +306,7 @@ Type=simple
 User=root
 Group=root
 LimitNOFILE=32768
+ExecStartPre=/bin/sleep 30 #Somehow just waiting makes this work on debian 9
 ExecStart=/usr/bin/ss-server
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 
