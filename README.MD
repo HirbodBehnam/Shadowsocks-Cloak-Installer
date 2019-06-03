@@ -20,7 +20,7 @@ The script should work with these operating systems:
 
 arm, arm64, amd64 and i386 are supported.
 
-**NOTE:** On Debian 8 some cipher do not work because the server file is very old. Use `ctr` ciphers or wait until I add build and install from source feature.
+**NOTE:** On Debian 8 some cipher do not work because the `ss-server` is very old. Use `ctr` ciphers or wait until I add build and install from source feature.
 #### Tested On
 * CentOS 7 Minimal amd64
 * Debian 8.11 Net install amd64
@@ -55,6 +55,8 @@ At first install [shadowsocks windows](https://github.com/shadowsocks/shadowsock
 
 Instead download [this](https://raw.githubusercontent.com/cbeuw/Cloak/master/config/ckclient.json) file on your PC. Edit the config with your server credits. Then open Shadowsocks application. Right click on the tray icon -> Servers -> Edit Servers. Click "Add". Insert your server info. At "Plugin Program" put your `ck-client-windows-XXX` file path; For example: `C:\Program Files (x86)\Shadowsocks\ck-client-windows-amd64-1.1.1.exe` . At "Plugin Options" put path of `ckclient.json`; For example `D:\ckclient.json`
 ## Next Steps
+### FAQ
+[Here](https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/wiki/FAQ)
 ### BBR
 At first what is BBR?
 
