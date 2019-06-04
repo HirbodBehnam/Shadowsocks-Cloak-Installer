@@ -306,7 +306,7 @@ Type=simple
 User=root
 Group=root
 LimitNOFILE=32768
-ExecStartPre=/bin/sleep 30 #Somehow just waiting makes this work on debian 9
+ExecStartPre=/bin/sleep 30
 ExecStart=/usr/bin/ss-server
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 
