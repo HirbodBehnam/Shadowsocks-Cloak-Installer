@@ -35,6 +35,7 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 PUBLIC_IP="YOUR_IP"
             fi
             ckauid=$(jq -r '.AdminUID' < 'ckconfig.json')
+            ckpv=$(jq -r '.PrivateKey' < 'ckconfig.json')
             ckpub=$(cat ckpublickey.txt)
             echo "Your Server IP: $PUBLIC_IP"
             echo "Password:       $Password"
