@@ -349,7 +349,7 @@ ckpub=${ckpub::-1}
 ckpub+="\\="
 ckauid=${ckauid::-1}
 ckauid+="\\="
-SERVER_CLOAK_ARGS="ck-client;UID=$ckauid;PublicKey=$ckpub;ServerName=bing.com;TicketTimeHint=3600;MaskBrowser=chrome;NumConn=4"
+SERVER_CLOAK_ARGS="ck-client;UID=$ckauid;PublicKey=$ckpub;ServerName=$ckwebaddr;TicketTimeHint=3600;MaskBrowser=chrome;NumConn=4"
 SERVER_CLOAK_ARGS=$(printf "%s" "$SERVER_CLOAK_ARGS" | curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-) #https://stackoverflow.com/a/10797966/4213397
 SERVER_BASE64="ss://$SERVER_BASE64@$PUBLIC_IP:$PORT?plugin=$SERVER_CLOAK_ARGS"
 qrencode -t ansiutf8 "$SERVER_BASE64"
