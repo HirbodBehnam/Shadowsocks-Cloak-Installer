@@ -47,7 +47,7 @@ if [ -d "/etc/shadowsocks-libev" ]; then
             echo "Cloak Server Name:    Use the domain of $ckwebaddr,if untouched use bing.com"
             echo "Cloak TicketTimeHint: Leave default(3600)"
             echo "Cloak NumConn:        4 or more"
-            echo "Cloak MaskBrowser:    firewall or chrome"
+            echo "Cloak MaskBrowser:    firefox or chrome"
             echo "Also read more about these arguments at https://github.com/cbeuw/Cloak#client"
             echo
             echo "Download cloak client for android from https://github.com/cbeuw/Cloak-android/releases"
@@ -335,7 +335,7 @@ echo "Cloak Public Key:     $ckpub"
 echo "Cloak Server Name:    Use the domain of $ckwebaddr,if untouched use bing.com"
 echo "Cloak TicketTimeHint: Leave default(3600)"
 echo "Cloak NumConn:        4 or more"
-echo "Cloak MaskBrowser:    firewall or chrome"
+echo "Cloak MaskBrowser:    firefox or chrome"
 echo "Rerun the script to get these configs again"
 echo "Also read more about these arguments at https://github.com/cbeuw/Cloak#client"
 echo
