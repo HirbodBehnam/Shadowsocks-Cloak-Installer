@@ -194,8 +194,9 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 arrIN=(${IN//:/ })
                 PreAdminConsolePrint
                 echo "Type 5 at panel and press enter."
-                echo "Enter ${arrIN[1]} as UID."
+                echo "Enter $(tput setaf 3)${arrIN[1]}$(tput sgr 0) as UID."
                 echo "Choose y and press enter."
+                echo "Then press Ctrl+C to exit admin panel"
                 read -r -p "READ ALL ABOVE then press enter to continue..."
                 trap "echo Process Exited." SIGINT
                 ck-client -a -c ckclient.json
@@ -244,6 +245,7 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 systemctl stop shadowsocks-libev
                 systemctl disable shadowsocks-libev
                 rm -f /etc/systemd/system/shadowsocks-server.service
+                systemctl daemon-reload
                 if [[ $distro =~ "CentOS" ]]; then
                     yum -y remove shadowsocks-libev
                     firewall-cmd --remove-port="$PORT"/tcp
