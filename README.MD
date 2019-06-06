@@ -1,9 +1,12 @@
 # Shadowsocks With Cloak Plugin Installer
 A script to install shadowsocks with cloak plugin in your server.
+
+**PLEASE NOTE:** DO NOT use QR code nor `ss://` link for windows client. See [here](https://github.com/shadowsocks/shadowsocks-windows/pull/2364). To setup without qr code, see [here](#windows)
 ## Why this installer?
 * Install with some simple copy and pasting
 * Install powerful cloak plugin as well
 * Show QRCode and `ss://` link at the end
+* User Management
 * Automatic service configuration
 * Automatically setup firewall
 * Support Debian, Ubuntu and CentOS
@@ -90,5 +93,7 @@ Here are some handy links to install BBR and upgrade kernel:
 Shadowsocks cannot natively route all traffic. You can use some apps like SocksCap or other stuff to route applications through shadowsocks.
 
 If you want a VPN you can use [wireguard](https://github.com/l-n-s/wireguard-install) or [openvpn](https://github.com/angristan/openvpn-install).
+### Server
+You can use any VPS or Dedicated Server. If you want a cheap and low-end server, I personally recommend to buy one at [Virmach](https://virmach.com/); They also accept cryptos!
 ### Donations
 You can donate to me through bitcoin at `1XDgEkpnkJ7hC8Kwv5adfaDC1Z3FrkwsK`, Ethereum at `0xbb527a28B76235E1C125206B7CcFF944459b4894`, ZCash at `t1ZKYrYZCjxDYvo6mQaLZi3gNe2a6MydUo3` and Bitcoin Gold at `GcNgxfyR3nnAsD3Nhuckvq14sXYuDFkK9P`

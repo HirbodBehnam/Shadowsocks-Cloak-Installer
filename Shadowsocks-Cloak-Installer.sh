@@ -1,4 +1,5 @@
 #!/bin/bash
+num_regex='^[0-9]+$'
 function GetRandomPort(){
     echo "Installing lsof package. Please wait."
     yum -y -q install lsof
@@ -12,15 +13,62 @@ function GetRandomPort(){
         GetRandomPort
     fi
 }
+function ShowConnectionInfo(){
+    echo "Your Server IP: $PUBLIC_IP"
+    echo "Password:       $Password"
+    echo "Port:           $PORT"
+    echo "Encryption:     $cipher"
+    if [ $1 == true ]; then
+        echo "Cloak UID (Admin ID): $ckauid"
+    else
+        echo "Cloak UID:            $ckauid"
+    fi
+    echo "Cloak Public Key:     $ckpub"
+    echo "Cloak Server Name:    Use the domain of $ckwebaddr,if untouched use bing.com"
+    echo "Cloak TicketTimeHint: Leave default(3600)"
+    echo "Cloak NumConn:        4 or more"
+    echo "Cloak MaskBrowser:    firefox or chrome"
+    echo "Also read more about these arguments at https://github.com/cbeuw/Cloak#client"
+    echo
+    echo "Download cloak client for android from https://github.com/cbeuw/Cloak-android/releases"
+    echo "Download cloak client for PC from https://github.com/cbeuw/Cloak/releases"
+    echo
+    echo
+    echo
+    ckpub=${ckpub::-1}
+    ckpub+="\\="
+    ckauid=${ckauid::-1}
+    ckauid+="\\="
+    SERVER_BASE64=$(printf "%s" "$cipher:$Password" | base64)
+    SERVER_CLOAK_ARGS="ck-client;UID=$ckauid;PublicKey=$ckpub;ServerName=$ckwebaddr;TicketTimeHint=3600;MaskBrowser=chrome;NumConn=4"
+    SERVER_CLOAK_ARGS=$(printf "%s" "$SERVER_CLOAK_ARGS" | curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-) #https://stackoverflow.com/a/10797966/4213397
+    SERVER_BASE64="ss://$SERVER_BASE64@$PUBLIC_IP:$PORT?plugin=$SERVER_CLOAK_ARGS"
+    qrencode -t ansiutf8 "$SERVER_BASE64"
+    echo
+    echo
+    echo "Or just use this string: $SERVER_BASE64"
+}
+function PreAdminConsolePrint(){
+    clear
+    echo "$(tput setaf 3)PLEASE READ THIS BEFORE CONTINUING$(tput sgr 0)"
+    echo "The steps here are semi-automated. You have to enter some values yourself. Please read all of the instructions on screen then continue."
+    echo
+    echo "At first application wants you to enter the IP and Port of your server. Enter this:"
+    echo "$(tput setaf 3)127.0.0.1:$PORT$(tput sgr 0)"
+    echo "Then you will be asked for Admin UID. Enter this:"
+    echo "$(tput setaf 3)$ckauid$(tput sgr 0)"
+    echo "Now you will enter the admin panel."
+}
 if [[ "$EUID" -ne 0 ]]; then #Check root
     echo "Please run this script as root"
     exit 1
 fi
 if [ -d "/etc/shadowsocks-libev" ]; then
     echo "Looks like you have installed shadowsocks. Choose an option below:"
-    echo "1) Show Connection Info"
-    echo "2) Regenerate Firewall Rules"
-    echo "3) Uninstall Shadowsocks"
+    echo "1) Show Connection Info for Admin"
+    echo "2) User Management"
+    echo "3) Regenerate Firewall Rules"
+    echo "4) Uninstall Shadowsocks"
     read -r -p "Please enter a number: " OPTION
     distro=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
     cd /etc/shadowsocks-libev || exit 2
@@ -35,40 +83,151 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 PUBLIC_IP="YOUR_IP"
             fi
             ckauid=$(jq -r '.AdminUID' < 'ckconfig.json')
-            ckpv=$(jq -r '.PrivateKey' < 'ckconfig.json')
-            ckpub=$(cat ckpublickey.txt)
-            echo "Your Server IP: $PUBLIC_IP"
-            echo "Password:       $Password"
-            echo "Port:           $PORT"
-            echo "Encryption:     $cipher"
-            echo "Cloak UID (Admin ID): $ckauid"
-            echo "Cloak Private Key:    $ckpv"
-            echo "Cloak Public Key:     $ckpub"
-            echo "Cloak Server Name:    Use the domain of $ckwebaddr,if untouched use bing.com"
-            echo "Cloak TicketTimeHint: Leave default(3600)"
-            echo "Cloak NumConn:        4 or more"
-            echo "Cloak MaskBrowser:    firefox or chrome"
-            echo "Also read more about these arguments at https://github.com/cbeuw/Cloak#client"
-            echo
-            echo "Download cloak client for android from https://github.com/cbeuw/Cloak-android/releases"
-            echo "Download cloak client for PC from https://github.com/cbeuw/Cloak/releases"
-            echo
-            echo
-            echo
-            ckpub=${ckpub::-1}
-            ckpub+="\\="
-            ckauid=${ckauid::-1}
-            ckauid+="\\="
-            SERVER_BASE64=$(printf "%s" "$cipher:$Password" | base64)
-            SERVER_CLOAK_ARGS="ck-client;UID=$ckauid;PublicKey=$ckpub;ServerName=$ckwebaddr;TicketTimeHint=3600;MaskBrowser=chrome;NumConn=4"
-            SERVER_CLOAK_ARGS=$(printf "%s" "$SERVER_CLOAK_ARGS" | curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-) #https://stackoverflow.com/a/10797966/4213397
-            SERVER_BASE64="ss://$SERVER_BASE64@$PUBLIC_IP:$PORT?plugin=$SERVER_CLOAK_ARGS"
-            qrencode -t ansiutf8 "$SERVER_BASE64"
-            echo
-            echo
-            echo "Or just use this string: $SERVER_BASE64"
+            ckwebaddr=$(jq -r '.WebServerAddr' < 'ckconfig.json')
+            ckpub=$(jq -r '.PublicKey' < 'ckclient.json')
+            ShowConnectionInfo true
         ;;
         2)
+            ckauid=$(jq -r '.AdminUID' < 'ckconfig.json')
+            echo "1) Show Connection Info for User"
+            echo "2) Add User"
+            echo "3) Revoke User"
+            echo "4) Open Console Admin"
+            read -r -p "Please enter a number: " OPTION
+            case $OPTION in
+            1)
+                Users=()
+                i=1
+                while IFS= read -r line
+                do
+                    Users+=("$line")
+                    echo "$i) $line"
+                    i=$((i+1))
+                done < "usersForScript.txt"
+                if [ ${#Users[@]} -eq 0 ]; then
+                    echo "No users created!"
+                    exit 0
+                fi
+                read -r -p "Choose a username to continue:" OPTION
+                i=$((i-1))
+                if [ "$OPTION" -gt $i ] || [ "$OPTION" -lt 1 ]; then 
+                    echo "$(tput setaf 1)Error:$(tput sgr 0): Number must be between 1 and $i"
+                    exit 1
+                fi
+                OPTION=$((OPTION-1))
+                IN=${Users[$OPTION]}
+                arrIN=(${IN//:/ })
+                cipher=$(jq -r '.method' < 'config.json')
+                Password=$(jq -r '.password' < 'config.json')
+                PUBLIC_IP="$(curl https://api.ipify.org -sS)"
+                CURL_EXIT_STATUS=$?
+                if [ $CURL_EXIT_STATUS -ne 0 ]; then
+                    PUBLIC_IP="YOUR_IP"
+                fi
+                ckauid=${arrIN[1]}
+                ckwebaddr=$(jq -r '.WebServerAddr' < 'ckconfig.json')
+                ckpub=$(jq -r '.PublicKey' < 'ckclient.json')
+                ShowConnectionInfo false
+            ;;
+            2)
+                read -r -p "Enter a username for your user: " NewUserNickname
+                NewUserID=$(ck-server -u)
+                read -r -p "How many days this user can use the script? [1~3650]: " -e -i 365 ValidDays
+                if ! [[ $ValidDays =~ $num_regex ]] ; then 
+                    echo "$(tput setaf 1)Error:$(tput sgr 0) The input is not a valid number"
+                    exit 1
+                fi
+                if [ "$ValidDays" -gt 3650 ] || [ "$ValidDays" -lt 1 ] ; then
+                    echo "$(tput setaf 1)Error:$(tput sgr 0): Number must be between 1 and 3650"
+                    exit 1
+                fi
+                Now=$(date +%s)
+                ValidDays=$((ValidDays * 86400))
+                ValidDays=$((ValidDays + Now))
+                PreAdminConsolePrint
+                echo "Type 4 at panel and press enter."
+                echo "Enter $(tput setaf 3)$NewUserID$(tput sgr 0) as UID."
+                echo "SessionsCap is maximum amount of concurrent sessions a user can have."
+                echo "UpRate is maximum upload speed for user in byte/s"
+                echo "DownRate is maximum download speed for user in byte/s"
+                echo "UpCredit is maximum amount of bytes user can upload."
+                echo "DownCredit is maximum amount of bytes user can download."
+                echo "For ExpiryTime, enter $(tput setaf 3)$ValidDays$(tput sgr 0)"
+                echo "Then press Ctrl+C to exit admin panel"
+                echo
+                read -r -p "READ ALL ABOVE then press enter to continue..."
+                trap "echo Process Exited." SIGINT
+                ck-client -a -c ckclient.json
+                echo
+                read -r -p "The admin pannel exited; Was the proccess successful or not? (Did you see a \"ok\"?) [y/n]" Result
+                if [ "$Result" == "y" ]; then
+                    echo "Great!"
+                    echo "$NewUserNickname:$NewUserID" >> usersForScript.txt
+                elif [ "$Result" == "n" ]; then
+                    echo "Ops!"
+                    echo "You can re run the script to re-create the user."
+                    echo "If you belive there is a bug in script open an issue here: https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/issues"
+                    echo "If you think that the bug is from Cloak, open an issue here: https://github.com/cbeuw/Cloak/issues"
+                fi
+            ;;
+            3)
+                Users=()
+                i=1
+                while IFS= read -r line
+                do
+                    Users+=("$line")
+                    echo "$i) $line"
+                    i=$((i+1))
+                done < "usersForScript.txt"
+                if [ ${#Users[@]} -eq 0 ]; then
+                    echo "No users created!"
+                    exit 0
+                fi
+                read -r -p "Choose a username to continue:" OPTION
+                i=$((i-1))
+                if [ "$OPTION" -gt $i ] || [ "$OPTION" -lt 1 ]; then 
+                    echo "$(tput setaf 1)Error:$(tput sgr 0): Number must be between 1 and $i"
+                    exit 1
+                fi
+                OPTION=$((OPTION-1))
+                IN=${Users[$OPTION]}
+                arrIN=(${IN//:/ })
+                PreAdminConsolePrint
+                echo "Type 5 at panel and press enter."
+                echo "Enter ${arrIN[1]} as UID."
+                echo "Choose y and press enter."
+                read -r -p "READ ALL ABOVE then press enter to continue..."
+                trap "echo Process Exited." SIGINT
+                ck-client -a -c ckclient.json
+                echo
+                read -r -p "The admin pannel exited; Was the proccess successful or not? (Did you see a \"ok\"?) [y/n]" Result
+                if [ "$Result" == "y" ]; then
+                    echo "Great!"
+                    rm usersForScript.txt
+                    touch usersForScript.txt
+                    for i in "${Users[@]}"
+                    do
+                        if [ "$i" != "$IN" ]; then
+                            echo "$i" >> usersForScript.txt
+                        fi
+                    done
+                elif [ "$Result" == "n" ]; then
+                    echo "Ops!"
+                    echo "You can re run the script to retry to remove the user."
+                    echo "If you belive there is a bug in script open an issue here: https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/issues"
+                    echo "If you think that the bug is from Cloak, open an issue here: https://github.com/cbeuw/Cloak/issues"
+                fi
+            ;;
+            4)
+                PreAdminConsolePrint
+                echo "Exit admin panel with Ctrl+C"
+                echo
+                read -r -p "Press enter to continue..."
+                ck-client -a -c ckclient.json
+            ;;
+            esac
+        ;;
+        3)
         if [[ $distro =~ "CentOS" ]]; then
             echo "firewall-cmd --add-port=$PORT/tcp"
             echo "firewall-cmd --permanent --add-port=$PORT/tcp"
@@ -79,35 +238,35 @@ if [ -d "/etc/shadowsocks-libev" ]; then
             echo "iptables-save"
         fi
         ;;
-        3)
+        4)
             read -r -p "I still keep some packages like \"qrencode\". Do want to uninstall Shadowsocks?(y/n) " OPTION
-            if [ "$OPTION" == "n" ] | [ "$OPTION" == "N" ]; then
-                exit 0
+            if [ "$OPTION" == "y" ] || [ "$OPTION" == "Y" ]; then
+                systemctl stop shadowsocks-libev
+                systemctl disable shadowsocks-libev
+                rm -f /etc/systemd/system/shadowsocks-server.service
+                if [[ $distro =~ "CentOS" ]]; then
+                    yum -y remove shadowsocks-libev
+                    firewall-cmd --remove-port="$PORT"/tcp
+                    firewall-cmd --permanent --remove-port="$PORT"/tcp
+                elif [[ $distro =~ "Ubuntu" ]]; then
+                    apt-get -y purge shadowsocks-libev
+                    ufw delete allow "$PORT"/tcp
+                elif [[ $distro =~ "Debian" ]]; then
+                    apt-get -y purge shadowsocks-libev
+                    iptables -D INPUT -p tcp --dport "$PORT" --jump ACCEPT
+                    iptables-save > /etc/iptables/rules.v4
+                fi
+                rm -rf /etc/shadowsocks-libev
+                rm -f /usr/local/bin/ck-server
+                rm -f /usr/local/bin/ck-client
+                echo "Done"
+                echo "Please reboot the server for a clean uninstal."
             fi
-            systemctl stop shadowsocks-libev
-            systemctl disable shadowsocks-libev
-            rm -f /etc/systemd/system/shadowsocks-server.service
-            if [[ $distro =~ "CentOS" ]]; then
-                yum -y remove shadowsocks-libev
-                firewall-cmd --remove-port="$PORT"/tcp
-                firewall-cmd --permanent --remove-port="$PORT"/tcp
-            elif [[ $distro =~ "Ubuntu" ]]; then
-                apt-get -y purge shadowsocks-libev
-                ufw delete allow "$PORT"/tcp
-            elif [[ $distro =~ "Debian" ]]; then
-                apt-get -y purge shadowsocks-libev
-                iptables -D INPUT -p tcp --dport "$PORT" --jump ACCEPT
-                iptables-save > /etc/iptables/rules.v4 
-            fi
-            rm -rf /etc/shadowsocks-libev
-            rm -f /usr/local/bin/ck-server
-            echo "Done"
         ;;
     esac
     exit 0
 fi
 ciphers=(rc4-md5 aes-128-gcm aes-192-gcm aes-256-gcm aes-128-cfb aes-192-cfb aes-256-cfb aes-128-ctr aes-192-ctr aes-256-ctr camellia-128-cfb camellia-192-cfb camellia-256-cfb bf-cfb chacha20-ietf-poly1305 xchacha20-ietf-poly1305 salsa20 chacha20 chacha20-ietf)
-num_regex='^[0-9]+$'
 clear
 echo "Shadowsocks with Cloak installer by Hirbod Behnam"
 echo "Source at https://github.com/HirbodBehnam/ShadowsocksCloakInstall"
@@ -207,10 +366,10 @@ echo "4) arm64"
 read -r -p "Select your architecture: " -e -i $arch arch
 case $arch in
     1)
-    arch="amd64"
+    arch="386"
     ;;
     2)
-    arch="386"
+    arch="amd64"
     ;;
     3)
     arch="arm"
@@ -229,7 +388,6 @@ if [[ $distro =~ "CentOS" ]]; then
     yum -y install dnf epel-release
 	dnf -y install 'dnf-command(copr)'
 	dnf -y copr enable librehat/shadowsocks
-	yum -y update
 	yum -y install shadowsocks-libev wget jq qrencode curl firewalld haveged
     firewall-cmd --add-port="$PORT"/tcp
     firewall-cmd --permanent --add-port="$PORT"/tcp
@@ -273,6 +431,11 @@ url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/l
 wget -O ck-server "$url"
 chmod +x ck-server
 mv ck-server /usr/local/bin
+#Install cloak client for post install management
+url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
+wget -O ck-client "$url"
+chmod +x ck-client
+mv ck-client /usr/local/bin
 #Setup shadowsocks config
 rm -f /etc/shadowsocks-libev/config.json
 echo "{
@@ -293,7 +456,15 @@ echo "{
     \"AdminUID\":\"$ckauid\",
     \"DatabasePath\":\"/etc/shadowsocks-libev/userinfo.db\"
 }">>/etc/shadowsocks-libev/ckconfig.json
-echo "$ckpub" >> /etc/shadowsocks-libev/ckpublickey.txt
+echo "{
+	\"UID\":\"$ckauid\",
+	\"PublicKey\":\"$ckpub\",
+	\"ServerName\":\"$ckwebaddr\",
+	\"TicketTimeHint\":3600,
+	\"NumConn\":4,
+	\"MaskBrowser\":\"chrome\"
+}">>/etc/shadowsocks-libev/ckclient.json
+touch /etc/shadowsocks-libev/usersForScript.txt
 chmod 777 /etc/shadowsocks-libev
 #Service
 rm /etc/systemd/system/shadowsocks-server.service
@@ -309,6 +480,7 @@ Group=root
 LimitNOFILE=32768
 ExecStartPre=/bin/sleep 30
 ExecStart=/usr/bin/ss-server
+WorkingDirectory=/etc/shadowsocks-libev
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 
 [Install]
@@ -316,6 +488,7 @@ WantedBy=multi-user.target" >> /etc/systemd/system/shadowsocks-server.service
 systemctl daemon-reload
 systemctl stop shadowsocks-libev
 systemctl disable shadowsocks-libev
+echo "Please wait 10 seconds..."
 systemctl start shadowsocks-server
 systemctl enable shadowsocks-server
 #Show keys server and...
@@ -325,34 +498,4 @@ if [ $CURL_EXIT_STATUS -ne 0 ]; then
   PUBLIC_IP="YOUR_IP"
 fi
 clear
-echo "Your Server IP: $PUBLIC_IP"
-echo "Password:       $Password"
-echo "Port:           $PORT"
-echo "Encryption:     $cipher"
-echo "Cloak UID (Admin ID): $ckauid"
-echo "Cloak Private Key:    $ckpv"
-echo "Cloak Public Key:     $ckpub"
-echo "Cloak Server Name:    Use the domain of $ckwebaddr,if untouched use bing.com"
-echo "Cloak TicketTimeHint: Leave default(3600)"
-echo "Cloak NumConn:        4 or more"
-echo "Cloak MaskBrowser:    firefox or chrome"
-echo "Rerun the script to get these configs again"
-echo "Also read more about these arguments at https://github.com/cbeuw/Cloak#client"
-echo
-echo "Download cloak client for android from https://github.com/cbeuw/Cloak-android/releases"
-echo "Download cloak client for PC from https://github.com/cbeuw/Cloak/releases"
-echo
-echo
-echo
-SERVER_BASE64=$(printf "%s" "$cipher:$Password" | base64)
-ckpub=${ckpub::-1}
-ckpub+="\\="
-ckauid=${ckauid::-1}
-ckauid+="\\="
-SERVER_CLOAK_ARGS="ck-client;UID=$ckauid;PublicKey=$ckpub;ServerName=$ckwebaddr;TicketTimeHint=3600;MaskBrowser=chrome;NumConn=4"
-SERVER_CLOAK_ARGS=$(printf "%s" "$SERVER_CLOAK_ARGS" | curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-) #https://stackoverflow.com/a/10797966/4213397
-SERVER_BASE64="ss://$SERVER_BASE64@$PUBLIC_IP:$PORT?plugin=$SERVER_CLOAK_ARGS"
-qrencode -t ansiutf8 "$SERVER_BASE64"
-echo
-echo
-echo "Or just use this string: $SERVER_BASE64"
+ShowConnectionInfo true
