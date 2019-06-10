@@ -63,6 +63,7 @@ if [[ "$EUID" -ne 0 ]]; then #Check root
     echo "Please run this script as root"
     exit 1
 fi
+distro=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 if [ -d "/etc/shadowsocks-libev" ]; then
     echo "Looks like you have installed shadowsocks. Choose an option below:"
     echo "1) Show Connection Info for Admin"
@@ -70,7 +71,6 @@ if [ -d "/etc/shadowsocks-libev" ]; then
     echo "3) Regenerate Firewall Rules"
     echo "4) Uninstall Shadowsocks"
     read -r -p "Please enter a number: " OPTION
-    distro=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
     cd /etc/shadowsocks-libev || exit 2
     PORT=$(jq -r '.server_port' < 'config.json')
     case $OPTION in
@@ -159,14 +159,14 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 trap "echo Process Exited." SIGINT
                 ck-client -a -c ckclient.json
                 echo
-                read -r -p "The admin pannel exited; Was the proccess successful or not? (Did you see a \"ok\"?) [y/n]" Result
+                read -r -p "The admin panel exited; Was the process successful or not? (Did you see a \"ok\"?) [y/n]" Result
                 if [ "$Result" == "y" ]; then
                     echo "Great!"
                     echo "$NewUserNickname:$NewUserID" >> usersForScript.txt
                 elif [ "$Result" == "n" ]; then
                     echo "Ops!"
                     echo "You can re run the script to re-create the user."
-                    echo "If you belive there is a bug in script open an issue here: https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/issues"
+                    echo "If you believe there is a bug in script open an issue here: https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/issues"
                     echo "If you think that the bug is from Cloak, open an issue here: https://github.com/cbeuw/Cloak/issues"
                 fi
             ;;
@@ -201,7 +201,7 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 trap "echo Process Exited." SIGINT
                 ck-client -a -c ckclient.json
                 echo
-                read -r -p "The admin pannel exited; Was the proccess successful or not? (Did you see a \"ok\"?) [y/n]" Result
+                read -r -p "The admin panel exited; Was the process successful or not? (Did you see a \"ok\"?) [y/n]" Result
                 if [ "$Result" == "y" ]; then
                     echo "Great!"
                     rm usersForScript.txt
@@ -215,7 +215,7 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 elif [ "$Result" == "n" ]; then
                     echo "Ops!"
                     echo "You can re run the script to retry to remove the user."
-                    echo "If you belive there is a bug in script open an issue here: https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/issues"
+                    echo "If you believe there is a bug in script open an issue here: https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/issues"
                     echo "If you think that the bug is from Cloak, open an issue here: https://github.com/cbeuw/Cloak/issues"
                 fi
             ;;
@@ -262,7 +262,7 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 rm -f /usr/local/bin/ck-server
                 rm -f /usr/local/bin/ck-client
                 echo "Done"
-                echo "Please reboot the server for a clean uninstal."
+                echo "Please reboot the server for a clean uninstall."
             fi
         ;;
     esac
@@ -297,6 +297,13 @@ if [ "$Password" == "" ]; then
     echo "$Password was chosen."
 fi
 #Get cipher
+if [[ $distro =~ "Debian" ]]; then
+    ver=$(cat /etc/debian_version)
+    ver="${ver:0:1}"
+    if [ "$ver" == "8" ]; then
+        ciphers=(rc4-md5 aes-128-cfb aes-192-cfb aes-256-cfb aes-128-ctr aes-192-ctr aes-256-ctr bf-cfb camellia-128-cfb camellia-192-cfb camellia-256-cfb salsa20 chacha20)
+    fi
+fi
 echo
 for (( i = 0 ; i < ${#ciphers[@]}; i++ )); do
     echo "$((i+1))) ${ciphers[$i]}"
@@ -385,7 +392,6 @@ case $arch in
     ;;
 esac
 #Install shadowsocks
-distro=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 if [[ $distro =~ "CentOS" ]]; then
     yum -y install dnf epel-release
 	dnf -y install 'dnf-command(copr)'
