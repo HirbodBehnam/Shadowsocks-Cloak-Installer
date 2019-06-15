@@ -393,9 +393,8 @@ case $arch in
 esac
 #Install shadowsocks
 if [[ $distro =~ "CentOS" ]]; then
-    yum -y install dnf epel-release
-	dnf -y install 'dnf-command(copr)'
-	dnf -y copr enable librehat/shadowsocks
+    yum -y install epel-release yum-utils
+	yum-config-manager --add-repo https://copr.fedorainfracloud.org/coprs/librehat/shadowsocks/repo/epel-7/librehat-shadowsocks-epel-7.repo
 	yum -y install shadowsocks-libev wget jq qrencode curl firewalld haveged
     firewall-cmd --add-port="$PORT"/tcp
     firewall-cmd --permanent --add-port="$PORT"/tcp
