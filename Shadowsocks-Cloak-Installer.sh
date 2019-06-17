@@ -108,7 +108,7 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                     echo "No users created!"
                     exit 0
                 fi
-                read -r -p "Choose a username to continue:" OPTION
+                read -r -p "Choose a username by number to continue: " OPTION
                 i=$((i-1))
                 if [ "$OPTION" -gt $i ] || [ "$OPTION" -lt 1 ]; then 
                     echo "$(tput setaf 1)Error:$(tput sgr 0): Number must be between 1 and $i"
@@ -145,9 +145,10 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 ValidDays=$((ValidDays * 86400))
                 ValidDays=$((ValidDays + Now))
                 PreAdminConsolePrint
-                echo "Type 4 at panel and press enter."
+                echo "Type $(tput setaf 3)4$(tput sgr 0) at panel and press enter."
                 echo "Enter $(tput setaf 3)$NewUserID$(tput sgr 0) as UID."
                 echo "SessionsCap is maximum amount of concurrent sessions a user can have."
+                echo "$(tput setaf 3)DO NOT COPY AND PASTE THESE NUMBER$(tput sgr 0)"
                 echo "UpRate is maximum upload speed for user in byte/s"
                 echo "DownRate is maximum download speed for user in byte/s"
                 echo "UpCredit is maximum amount of bytes user can upload."
@@ -183,7 +184,7 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                     echo "No users created!"
                     exit 0
                 fi
-                read -r -p "Choose a username to continue:" OPTION
+                read -r -p "Choose a username by number to continue: " OPTION
                 i=$((i-1))
                 if [ "$OPTION" -gt $i ] || [ "$OPTION" -lt 1 ]; then 
                     echo "$(tput setaf 1)Error:$(tput sgr 0): Number must be between 1 and $i"
@@ -193,10 +194,11 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 IN=${Users[$OPTION]}
                 arrIN=(${IN//:/ })
                 PreAdminConsolePrint
-                echo "Type 5 at panel and press enter."
+                echo "Type $(tput setaf 3)5$(tput sgr 0) at panel and press enter."
                 echo "Enter $(tput setaf 3)${arrIN[1]}$(tput sgr 0) as UID."
                 echo "Choose y and press enter."
                 echo "Then press Ctrl+C to exit admin panel"
+                echo
                 read -r -p "READ ALL ABOVE then press enter to continue..."
                 trap "echo Process Exited." SIGINT
                 ck-client -a -c ckclient.json
@@ -229,15 +231,15 @@ if [ -d "/etc/shadowsocks-libev" ]; then
             esac
         ;;
         3)
-        if [[ $distro =~ "CentOS" ]]; then
-            echo "firewall-cmd --add-port=$PORT/tcp"
-            echo "firewall-cmd --permanent --add-port=$PORT/tcp"
-        elif [[ $distro =~ "Ubuntu" ]]; then
-            echo "ufw allow $PORT/tcp"
-        elif [[ $distro =~ "Debian" ]]; then
-            echo "iptables -A INPUT -p tcp --dport $PORT --jump ACCEPT"
-            echo "iptables-save"
-        fi
+            if [[ $distro =~ "CentOS" ]]; then
+                echo "firewall-cmd --add-port=$PORT/tcp"
+                echo "firewall-cmd --permanent --add-port=$PORT/tcp"
+            elif [[ $distro =~ "Ubuntu" ]]; then
+                echo "ufw allow $PORT/tcp"
+            elif [[ $distro =~ "Debian" ]]; then
+                echo "iptables -A INPUT -p tcp --dport $PORT --jump ACCEPT"
+                echo "iptables-save"
+            fi
         ;;
         4)
             read -r -p "I still keep some packages like \"qrencode\". Do want to uninstall Shadowsocks?(y/n) " OPTION
