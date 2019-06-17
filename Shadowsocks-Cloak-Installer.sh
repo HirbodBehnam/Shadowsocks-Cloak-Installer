@@ -147,7 +147,7 @@ if [ -d "/etc/shadowsocks-libev" ]; then
                 PreAdminConsolePrint
                 echo "Type $(tput setaf 3)4$(tput sgr 0) at panel and press enter."
                 echo "Enter $(tput setaf 3)$NewUserID$(tput sgr 0) as UID."
-                echo "SessionsCap is maximum amount of concurrent sessions a user can have."
+                echo "SessionsCap is maximum amount of concurrent sessions a user can have. In other words, number of concurrent connections a user can have."
                 echo "$(tput setaf 3)DO NOT COPY AND PASTE THESE NUMBER$(tput sgr 0)"
                 echo "UpRate is maximum upload speed for user in byte/s"
                 echo "DownRate is maximum download speed for user in byte/s"
