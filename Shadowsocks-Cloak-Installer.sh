@@ -422,6 +422,18 @@ elif [[ $distro =~ "Ubuntu" ]]; then
     if [[ $(lsb_release -r -s) =~ "18" ]] || [[ $(lsb_release -r -s) =~ "19" ]]; then 
         apt update
         apt -y install shadowsocks-libev wget jq qrencode curl haveged
+        #Use BBR on user will
+        if ! [ "$(sysctl -n net.ipv4.tcp_congestion_control)" = "bbr" ]; then
+            echo
+            read -r -p "Do you want to use BBR?(y/n) " -e -i "y" OPTION
+            case $OPTION in
+            "y"|"Y")
+                echo 'net.core.default_qdisc=fq' | tee -a /etc/sysctl.conf
+                echo 'net.ipv4.tcp_congestion_control=bbr' | tee -a /etc/sysctl.conf
+                sysctl -p
+            ;;
+            esac
+        fi
     else
         apt-get install software-properties-common -y
         add-apt-repository ppa:max-c-lv/shadowsocks-libev -y
