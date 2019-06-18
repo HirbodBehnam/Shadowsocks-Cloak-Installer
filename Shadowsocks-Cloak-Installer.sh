@@ -397,20 +397,52 @@ esac
 if [[ $distro =~ "CentOS" ]]; then
     yum -y install epel-release yum-utils
 	yum-config-manager --add-repo https://copr.fedorainfracloud.org/coprs/librehat/shadowsocks/repo/epel-7/librehat-shadowsocks-epel-7.repo
-	yum -y install shadowsocks-libev wget jq qrencode curl firewalld haveged
-    firewall-cmd --add-port="$PORT"/tcp
-    firewall-cmd --permanent --add-port="$PORT"/tcp
+	yum -y install shadowsocks-libev wget jq qrencode curl haveged
+    SETFIREWALL=true
+    if ! yum -q list installed firewalld &>/dev/null; then
+        echo
+        read -r -p "Looks like \"firewalld\" is not installed Do you want to install it?(y/n) " -e -i "y" OPTION
+        OPTION="$(echo $OPTION | tr '[A-Z]' '[a-z]')"
+        case $OPTION in
+        "y"|"Y")
+            yum -y install firewalld
+            systemctl enable firewalld
+        ;;
+        *)
+            SETFIREWALL=false
+        ;;
+        esac
+    fi
+    if [ "$SETFIREWALL" = true ]; then
+        systemctl start firewalld
+        firewall-cmd --zone=public --add-port="$PORT"/tcp
+        firewall-cmd --runtime-to-permanent
+    fi
 elif [[ $distro =~ "Ubuntu" ]]; then
     if [[ $(lsb_release -r -s) =~ "18" ]] || [[ $(lsb_release -r -s) =~ "19" ]]; then 
         apt update
-        apt -y install shadowsocks-libev wget jq qrencode curl ufw haveged
+        apt -y install shadowsocks-libev wget jq qrencode curl haveged
     else
         apt-get install software-properties-common -y
         add-apt-repository ppa:max-c-lv/shadowsocks-libev -y
         apt-get update
-        apt-get -y install shadowsocks-libev wget jq qrencode curl ufw haveged
+        apt-get -y install shadowsocks-libev wget jq qrencode curl haveged
     fi
-    ufw allow "$PORT"/tcp
+    if dpkg --get-selections | grep -q "^ufw[[:space:]]*install$" >/dev/null; then
+        ufw enable
+        ufw allow "$PORT"/tcp
+    else
+        echo
+        read -r -p "Looks like \"UFW\"(Firewall) is not installed Do you want to install it?(y/n) " -e -i "y" OPTION
+        OPTION="$(echo $OPTION | tr '[A-Z]' '[a-z]')"
+        case $OPTION in
+        "y"|"Y")
+            apt-get install ufw
+            ufw enable
+            ufw allow "$PORT"/tcp
+        ;;
+        esac
+    fi
 elif [[ $distro =~ "Debian" ]]; then
     ver=$(cat /etc/debian_version)
     ver="${ver:0:1}"
