@@ -543,7 +543,7 @@ WantedBy=multi-user.target" >> /etc/systemd/system/shadowsocks-server.service
 systemctl daemon-reload
 systemctl stop shadowsocks-libev
 systemctl disable shadowsocks-libev
-echo "Please wait 10 seconds..."
+echo "Please wait 30 seconds..."
 systemctl start shadowsocks-server
 systemctl enable shadowsocks-server
 #Show keys server and...
