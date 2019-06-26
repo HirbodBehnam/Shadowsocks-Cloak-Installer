@@ -517,14 +517,14 @@ rm /etc/systemd/system/shadowsocks-server.service
 echo "[Unit]
 Description=Shadowsocks-libev Server Service
 Documentation=man:shadowsocks-libev(8)
-After=network.target network-online.target 
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 User=root
 Group=root
 LimitNOFILE=32768
-ExecStartPre=/bin/sleep 30
 ExecStart=/usr/bin/ss-server
 WorkingDirectory=/etc/shadowsocks-libev
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
@@ -534,7 +534,6 @@ WantedBy=multi-user.target" >> /etc/systemd/system/shadowsocks-server.service
 systemctl daemon-reload
 systemctl stop shadowsocks-libev
 systemctl disable shadowsocks-libev
-echo "Please wait 30 seconds..."
 systemctl start shadowsocks-server
 systemctl enable shadowsocks-server
 #Show keys server and...
