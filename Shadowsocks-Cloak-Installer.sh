@@ -396,8 +396,8 @@ esac
 #Install shadowsocks
 if [[ $distro =~ "CentOS" ]]; then
     yum -y install epel-release yum-utils
-	yum-config-manager --add-repo https://copr.fedorainfracloud.org/coprs/librehat/shadowsocks/repo/epel-7/librehat-shadowsocks-epel-7.repo
-	yum -y install shadowsocks-libev wget jq qrencode curl haveged
+    yum-config-manager --add-repo https://copr.fedorainfracloud.org/coprs/librehat/shadowsocks/repo/epel-7/librehat-shadowsocks-epel-7.repo
+    yum -y install shadowsocks-libev wget jq qrencode curl haveged
     SETFIREWALL=true
     if ! yum -q list installed firewalld &>/dev/null; then
         echo
@@ -441,16 +441,15 @@ elif [[ $distro =~ "Ubuntu" ]]; then
         apt-get -y install shadowsocks-libev wget jq qrencode curl haveged
     fi
     if dpkg --get-selections | grep -q "^ufw[[:space:]]*install$" >/dev/null; then
-        ufw enable
         ufw allow "$PORT"/tcp
     else
         echo
         read -r -p "Looks like \"UFW\"(Firewall) is not installed Do you want to install it?(y/n) " -e -i "y" OPTION
-        OPTION="$(echo $OPTION | tr '[A-Z]' '[a-z]')"
         case $OPTION in
         "y"|"Y")
             apt-get install ufw
             ufw enable
+            ufw allow ssh
             ufw allow "$PORT"/tcp
         ;;
         esac
