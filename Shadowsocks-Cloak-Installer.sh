@@ -1,17 +1,7 @@
 #!/bin/bash
 num_regex='^[0-9]+$'
 function GetRandomPort(){
-    echo "Installing lsof package. Please wait."
-    yum -y -q install lsof
-    local RETURN_CODE
-    RETURN_CODE=$?
-    if [ $RETURN_CODE -ne 0 ]; then
-        echo "$(tput setaf 3)Warning!$(tput sgr 0) lsof package did not installed successfully. The randomized port may be in use."
-    fi
     PORT=$((RANDOM % 16383 + 49152))
-    if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null ; then
-        GetRandomPort
-    fi
 }
 function ShowConnectionInfo(){
     echo "Your Server IP: $PUBLIC_IP"
@@ -299,10 +289,12 @@ if [ "$Password" == "" ]; then
     echo "$Password was chosen."
 fi
 #Get cipher
+default_port=15
 if [[ $distro =~ "Debian" ]]; then
     ver=$(cat /etc/debian_version)
     ver="${ver:0:1}"
     if [ "$ver" == "8" ]; then
+        default_port=2
         ciphers=(rc4-md5 aes-128-cfb aes-192-cfb aes-256-cfb aes-128-ctr aes-192-ctr aes-256-ctr bf-cfb camellia-128-cfb camellia-192-cfb camellia-256-cfb salsa20 chacha20)
     fi
 fi
@@ -310,7 +302,7 @@ echo
 for (( i = 0 ; i < ${#ciphers[@]}; i++ )); do
     echo "$((i+1))) ${ciphers[$i]}"
 done
-read -r -p "Enter the number of cipher you want to use: " -e -i 15 cipher
+read -r -p "Enter the number of cipher you want to use: " -e -i $default_port cipher
 if [ "$cipher" -lt 1 ] || [ "$cipher" -gt 18 ]; then
     echo "$(tput setaf 1)Error:$(tput sgr 0) Invalid option"
     exit 1
