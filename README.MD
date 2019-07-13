@@ -1,7 +1,6 @@
 # Shadowsocks With Cloak Plugin Installer
 A script to install shadowsocks with cloak plugin in your server.
 
-**PLEASE NOTE:** DO NOT use QR code nor `ss://` link for windows client. See [here](https://github.com/shadowsocks/shadowsocks-windows/pull/2364). To setup without qr code, see [here](#windows)
 ## Why this installer?
 * Install with some simple copy and pasting
 * Install powerful cloak plugin as well
@@ -52,9 +51,9 @@ Unfortunately cloak does not support iOS. (Most of the plugins does not work wit
 ### Windows
 At first install [shadowsocks windows](https://github.com/shadowsocks/shadowsocks-windows/releases). Then download cloak for windows from [here](https://github.com/cbeuw/Cloak/releases). If you are using a 32-bit system, download `ck-client-windows-386-X.exe
 ` if your system is 64-bit use `ck-client-windows-amd64-X.exe
-` **It's better to do not use ss:// or qr code** See [this](https://github.com/shadowsocks/shadowsocks-windows/pull/2364).
+`
 
-Instead download [this](https://raw.githubusercontent.com/cbeuw/Cloak/master/config/ckclient.json) file on your PC. Edit the config with your server credits. Then open Shadowsocks application. Right click on the tray icon -> Servers -> Edit Servers. Click "Add". Insert your server info. At "Plugin Program" put your `ck-client-windows-XXX` file path; For example: `C:\Program Files (x86)\Shadowsocks\ck-client-windows-amd64-1.1.1.exe` . At "Plugin Options" put path of `ckclient.json`; For example `D:\ckclient.json`
+Then use the QR Code or `ss://` link to import the server.
 ## Next Steps
 ### FAQ
 [Here](https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/wiki/FAQ)
