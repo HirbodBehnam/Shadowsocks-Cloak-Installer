@@ -471,8 +471,8 @@ else
     exit 2
 fi
 #Install cloak https://gist.github.com/cbeuw/37a9d434c237840d7e6d5e497539c1ca#file-shadowsocks-ck-release-sh-L118
-url="https://github.com/cbeuw/Cloak/releases/download/v1.1.1/ck-server-linux-$arch-1.1.1"
-urlc="https://github.com/cbeuw/Cloak/releases/download/v1.1.1/ck-client-linux-$arch-1.1.1"
+url="https://github.com/cbeuw/Cloak/releases/download/v1.1.2/ck-server-linux-$arch-1.1.2"
+urlc="https://github.com/cbeuw/Cloak/releases/download/v1.1.2/ck-client-linux-$arch-1.1.2"
 #url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
 wget -O ck-server "$url"
 chmod +x ck-server
