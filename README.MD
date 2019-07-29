@@ -50,10 +50,9 @@ You can connect to your shadowsocks with socks or http proxy set on localhost an
 Unfortunately cloak does not support iOS. (Most of the plugins does not work with iOS) Use shadowsocks without plugin. [Here](https://github.com/teddysun/shadowsocks_install/tree/master) is a script that you can install shadowsocks without plugin on your server.
 ### Windows
 At first install [shadowsocks windows](https://github.com/shadowsocks/shadowsocks-windows/releases). Then download cloak for windows from [here](https://github.com/cbeuw/Cloak/releases). If you are using a 32-bit system, download `ck-client-windows-386-X.exe
-` if your system is 64-bit use `ck-client-windows-amd64-X.exe
-`
+` if your system is 64-bit use `ck-client-windows-amd64-X.exe`. Then use the QR Code or `ss://` link to import the server.
 
-Then use the QR Code or `ss://` link to import the server.
+The program will give you an error that shadowsocks cannot find `ck-client` or something like this. Click OK and go to Edit Servers. Then write the absolute path to ck-client file in Plugin Program.
 ## Next Steps
 ### FAQ
 [Here](https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/wiki/FAQ)
@@ -62,7 +61,7 @@ At first what is BBR?
 
 **TL;DR: It speeds up TCP connections = Faster Shadowsocks server**
 
-BBR or Bottleneck Bandwidth and Round-trip propagation time (BBR) is a TCP congestion control algorithm developed at Google in 2016. While most congestion control algorithms are loss-based, in that they rely on packet loss as a signal to lower rates of transmission, BBR is model-based. The algorithm uses the maximum bandwidth and round-trip time at which the network delivered the most recent flight of outbound data packets to build an explicit model of the network. Each cumulative or selective acknowledgment of packet delivery produces a rate sample which records the amount of data delivered over the time interval between the transmission of a data packet and the acknowledgment of that packet. As network interface controllers evolve from megabit per second to gigabit per second performance,[clarification needed] packet loss should no longer be considered the primary determining factor in identifying congestion, making model-based congestion control algorithms which provide higher throughput and lower latency, such as BBR, a more reliable alternative to more popular algorithms like CUBIC. [Source](https://en.wikipedia.org/wiki/TCP_congestion_control#TCP_BBR)
+BBR or Bottleneck Bandwidth and Round-trip propagation time (BBR) is a TCP congestion control algorithm developed at Google in 2016. While most congestion control algorithms are loss-based, in that they rely on packet loss as a signal to lower rates of transmission, BBR is model-based. The algorithm uses the maximum bandwidth and round-trip time at which the network delivered the most recent flight of outbound data packets to build an explicit model of the network. Each cumulative or selective acknowledgment of packet delivery produces a rate sample which records the amount of data delivered over the time interval between the transmission of a data packet and the acknowledgment of that packet. As network interface controllers evolve from megabit per second to gigabit per second performance, packet loss should no longer be considered the primary determining factor in identifying congestion, making model-based congestion control algorithms which provide higher throughput and lower latency, such as BBR, a more reliable alternative to more popular algorithms like CUBIC. [Source](https://en.wikipedia.org/wiki/TCP_congestion_control#TCP_BBR)
 #### How to setup BBR?
 The requirement to enable BBR is to have Linux Kernel 4.9 or higher. If you do, you can enable BBR like this:
 ```bash
