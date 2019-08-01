@@ -1,7 +1,7 @@
 # Shadowsocks With Cloak Plugin Installer
 A script to install shadowsocks with cloak plugin in your server.
 
-**Update:** I'm going to release a version for Cloak 2 when it releases. I will support openvpn and shadowsocks
+**Update:** I'm going to release a version for Cloak 2 when it releases. It will support openvpn and shadowsocks
 
 ## Why this installer?
 * Install with some simple copy and pasting
