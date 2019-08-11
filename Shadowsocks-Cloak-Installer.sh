@@ -263,7 +263,7 @@ fi
 ciphers=(rc4-md5 aes-128-gcm aes-192-gcm aes-256-gcm aes-128-cfb aes-192-cfb aes-256-cfb aes-128-ctr aes-192-ctr aes-256-ctr camellia-128-cfb camellia-192-cfb camellia-256-cfb bf-cfb chacha20-ietf-poly1305 xchacha20-ietf-poly1305 salsa20 chacha20 chacha20-ietf)
 clear
 echo "Shadowsocks with Cloak installer by Hirbod Behnam"
-echo "Source at https://github.com/HirbodBehnam/ShadowsocksCloakInstall"
+echo "Source at https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer"
 echo "Shadowsocks-libev at https://github.com/shadowsocks/shadowsocks-libev"
 echo "Cloak at https://github.com/cbeuw/Cloak"
 echo
