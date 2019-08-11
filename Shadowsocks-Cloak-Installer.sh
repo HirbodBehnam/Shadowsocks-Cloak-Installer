@@ -234,8 +234,8 @@ if [ -d "/etc/shadowsocks-libev" ]; then
         4)
             read -r -p "I still keep some packages like \"qrencode\". Do want to uninstall Shadowsocks?(y/n) " OPTION
             if [ "$OPTION" == "y" ] || [ "$OPTION" == "Y" ]; then
-                systemctl stop shadowsocks-libev
-                systemctl disable shadowsocks-libev
+                systemctl stop shadowsocks-server
+                systemctl disable shadowsocks-server
                 rm -f /etc/systemd/system/shadowsocks-server.service
                 systemctl daemon-reload
                 if [[ $distro =~ "CentOS" ]]; then
