@@ -35,7 +35,7 @@ Copy and execute this command:
 ```bash
 curl -o Cloak-Installer.sh -L https://git.io/fj5mh && bash Cloak-Installer.sh
 ```
-Answer questions and wait until the setup finishes installing. Installing the 
+Answer questions and wait until the setup finishes installing. Installing the shadowsocks is optional.
 #### Install Openvpn or Tor with Cloak
 Please read [here](https://github.com/cbeuw/Cloak/wiki/Underlying-proxy-configuration-guides). The tutorial is just fine! It is recommended to install the openvpn or tor before installing my script.
 
