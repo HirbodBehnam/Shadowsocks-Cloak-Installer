@@ -29,6 +29,7 @@ The script should work with these operating systems:
 arm, arm64, amd64 and i386 are supported.
 #### Tested On (I will test others too)
 * Ubuntu 18.04 LTS Server amd64
+* Centos 7 amd64
 ### Installing Cloak 2 Plugin
 Copy and execute this command:
 ```bash
