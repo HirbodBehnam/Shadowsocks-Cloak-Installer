@@ -1,20 +1,24 @@
-# Shadowsocks With Cloak Plugin Installer
-A script to install shadowsocks with cloak plugin in your server.
-
-**Update:** I'm working on Cloak 2 installer. All built-in user management and shadowsocks installer. Also you can setup the Cloak for other protocols too. (Installer just accepts the ip and the destination port)
+# Cloak Installer With Shadowsocks
+A script to install Cloak in your server with or without shadowsocks.
 
 ## Why this installer?
 * Install with some simple copy and pasting
-* Install powerful cloak plugin as well
-* Show QRCode and `ss://` link at the end
+* Install Shadowsocks if you want it
+* Show QRCode and `ss://` link at the end (Only for shadowsocks)
 * User Management
 * Automatic service configuration
 * Automatically setup firewall
 * Support Debian, Ubuntu and CentOS
 ## What is [Cloak](https://github.com/cbeuw/Cloak)?
-A Shadowsocks plugin that obfuscates the traffic as normal HTTPS traffic to non-blocked websites through domain fronting and disguises the proxy server as a normal webserver.
+Cloak is a universal pluggable transport that cryptographically obfuscates proxy traffic as legitimate HTTPS traffic, disguises the proxy server as a normal web server, multiplexes traffic through multiple TCP connections and provides multi-user usage control.
 
-Cloak multiplexes all traffic through a fixed amount of underlying TCP connections which eliminates the TCP handshake overhead when using vanilla Shadowsocks. Cloak also provides user management, allowing multiple users to connect to the proxy server using one single port. It also provides QoS controls for individual users such as upload and download credit limit, as well as bandwidth control. [Source](https://github.com/cbeuw/Cloak#cloak)
+Cloak eliminates any "fingerprints" exposed by traditional proxy protocol designs which can be identified by adversaries through deep packet inspection. If a non-Cloak program or an unauthorized Cloak user (such as an adversary's prober) attempts to connect to Cloak server, it will serve as a transparent proxy between said machine and an ordinary website, so that to any unauthorized third party, a host running Cloak server is indistinguishable from an innocent web server. This is achieved through the use a series of [cryptographic stegnatography techniques](https://github.com/cbeuw/Cloak/wiki/Steganography-and-encryption).
+
+Since Cloak is transparent, it can be used in conjunction with any proxy software that tunnels traffic through TCP, such as Shadowsocks, OpenVPN and Tor. Multiple proxy servers can be running on the same server host machine and Cloak server will act as a reverse proxy, bridging clients with their desired proxy end.
+
+Cloak multiplexes traffic through multiple underlying TCP connections which reduces head-of-line blocking and eliminates TCP handshake overhead.
+
+Cloak provides multi-user support, allowing multiple clients to connect to the proxy server on the same port (443 by default). It also provides QoS controls for individual users such as data usage limit and bandwidth control. [source](https://github.com/cbeuw/Cloak#cloak)
 ## The Script
 ### Compatibility
 The script should work with these operating systems:
@@ -23,23 +27,35 @@ The script should work with these operating systems:
 * Ubuntu 16 / 18 / 19
 
 arm, arm64, amd64 and i386 are supported.
-#### Tested On
-* CentOS 7 Minimal amd64
-* Debian 8.11 Net install amd64
-* Debian 9.9 Net install amd64
+#### Tested On (I will test others too)
 * Ubuntu 18.04 LTS Server amd64
-* Ubuntu 16.04.5 LTS Server amd64
-### Installing 
+### Installing Cloak 2 Plugin
+Copy and execute this command:
+```bash
+curl -o Cloak-Installer.sh -L https://git.io/fj5mh && bash Cloak-Installer.sh
+```
+Answer questions and wait until the setup finishes installing. Installing the 
+#### Install Openvpn or Tor with Cloak
+Please read [here](https://github.com/cbeuw/Cloak/wiki/Underlying-proxy-configuration-guides). The tutorial is just fine! It is recommended to install the openvpn or tor before installing my script.
+
+Also [here](https://github.com/angristan/openvpn-install) is an script to install openvpn.
+
+After you set up the openvpn or tor, re-run the script. If you had the Cloak installed, you can use `Change Forwarding Rules` to add the address to proxy. If you are installing, when the script asks for custom rule, select yes and define it there.
+#### Post-Install
+After installing, re-run the script to either uninstall the proxy, add or delete users, generate QR codes for shadowsocks, or change the forwarding rules.
+
+Also script creates a service named `cloak-server`.
+### Installing Shadowsocks With Cloak 1 Plugin
 Copy and execute this command:
 ```bash
 curl -o Shadowsocks-Cloak-Installer.sh -L https://git.io/fjECg && bash Shadowsocks-Cloak-Installer.sh
 ```
 Answer questions and wait until the setup finishes installing. You can scan the QR Code after or use `ss://` link or even enter server config manually.
-### Post-Install
+#### Post-Install
 After installing, re-run the script to either uninstall the proxy or regenerate QR code and `ss://` link and configs.
 
 Also script creates a service named `shadowsocks-server`. **DO NOT USE shadowsocks-libev service.**
-## Client Setup
+## Shadowsocks Client Setup
 ### Android
 On Android at first download shadowsocks client from [Google Play](https://play.google.com/store/apps/details?id=com.github.shadowsocks). Then download and install Cloak APK from [here](https://github.com/cbeuw/Cloak-android/releases). Then simply scan the QR Code generated by script.
 ### Linux
@@ -55,6 +71,13 @@ At first install [shadowsocks windows](https://github.com/shadowsocks/shadowsock
 ` if your system is 64-bit use `ck-client-windows-amd64-X.exe`. Then use the QR Code or `ss://` link to import the server.
 
 The program will give you an error that shadowsocks cannot find `ck-client` or something like this. Click OK and go to Edit Servers. Then write the absolute path to ck-client file in Plugin Program.
+## Non-Shadowsocks Client Setup
+At first download the suitable plugin from [here](https://github.com/cbeuw/Cloak/releases). Then download the `ckclient.json` and change it as you need it. [link](https://github.com/cbeuw/Cloak/blob/master/example_config/ckclient.json). Then run the ck-client like this:
+```bash
+./ck-client -s <YOUR_SERVER_IP> -p <THE_CLOAK_PORT> -l <A_LOCAL_PORT> -c <PATH_TO_ckclient>
+```
+
+If you need to setup tor or openvpn with cloak read [here](https://github.com/cbeuw/Cloak/wiki/Underlying-puration-guides)
 ## Next Steps
 ### FAQ
 [Here](https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/wiki/FAQ)

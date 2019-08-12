@@ -79,6 +79,7 @@ function ShowConnectionInfo(){
     echo "Cloak MaskBrowser:    firefox or chrome"
     echo "Also read more about these arguments at https://github.com/cbeuw/Cloak#client"
     echo
+    echo "Download cloak client for android from https://github.com/cbeuw/Cloak-android/releases"
     echo "Download cloak client for PC from https://github.com/cbeuw/Cloak/releases"
     echo
     echo
@@ -105,8 +106,8 @@ if [ -d "/etc/cloak" ]; then
     echo "1) Add User"
     echo "2) Remove User"
     echo "3) Show UIDs"
-    echo "4) Show connections for Shadowsocks users"
-    echo "5) Change forwarding Rules"
+    echo "4) Show Connections for Shadowsocks Users"
+    echo "5) Change Forwarding Rules"
     echo "6) Regenerate Firewall Rules"
     echo "7) Uninstall Cloak"
     read -r -p "Please enter a number: " OPTION
