@@ -293,7 +293,7 @@ if [ -d "/etc/cloak" ]; then
                 rm ckserver.json
                 echo "$conf" >> ckserver.json
             elif [[ "$OPTION" == 2 ]];then
-                mapfile -t Rules < <(jq -r '.ProxyBook | keys[]' ckserver.json)
+                mapfile -t Rules < <(jq --arg k "$METHOD" --arg v "$ADDRESS" '.ProxyBook[$k] = $v' ckserver.json )
                 COUNTER=1
                 for i in "${Rules[@]}"
                 do
