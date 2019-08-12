@@ -59,9 +59,9 @@ function ListAllUIDs(){
     #Now list all of the restricted users
     GetRandomPort LOCAL_PANEL_PORT
     ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json & #The & will make this to run in background
-    ckcpid=$!
-    RESTRICTED_UIDS=$(curl http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users)
-    kill $ckcpid >> /dev/null
+    RESTRICTED_UIDS=$(curl http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users -sS)
+    kill $!
+    wait $! 2>/dev/null
     mapfile -t UIDS_2 < <(jq -r '.[].UID?' <<< "$RESTRICTED_UIDS")
     UIDS=("${UIDS[@]}" "${UIDS_2[@]}") #Merge them
 }
@@ -133,10 +133,10 @@ if [ -d "/etc/cloak" ]; then
                 UpCredit=$((UpCredit * 1048576))
                 GetRandomPort LOCAL_PANEL_PORT
                 ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json & #The & will make this to run in background
-                ckcpid=$!
                 ckencoded=$(echo "$ckbuid" | tr '+' '-' | tr '/' '_') #Encode just like https://github.com/cbeuw/Cloak-panel/blob/master/script/endpoint.js#L38
                 curl -d "UserInfo={\"UID\":\"$ckbuid\",\"SessionsCap\":$CAP,\"UpRate\":$UpRate,\"DownRate\":$DownRate,\"UpCredit\":$UpCredit,\"DownCredit\":$DownCredit,\"ExpiryTime\":$ValidDays}" -X POST "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users/$ckencoded"
-                kill $ckcpid
+                kill $!
+                wait $! 2>/dev/null
             else
                 conf=$(jq --arg key "$ckbuid" '.BypassUID += [$key]' < ckserver.json)
                 rm ckserver.json
@@ -220,9 +220,9 @@ if [ -d "/etc/cloak" ]; then
             else
                 ckencoded=$(echo "$UID_TO_REMOVE" | tr '+' '-' | tr '/' '_') #Encode just like https://github.com/cbeuw/Cloak-panel/blob/master/script/endpoint.js#L38
                 ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json & #The & will make this to run in background
-                ckcpid=$!
-                RESTRICTED_UIDS=$(curl -X "DELETE" "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users/$UID_TO_REMOVE")
-                kill $ckcpid
+                RESTRICTED_UIDS=$(curl -X "DELETE" "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users/$UID_TO_REMOVE" -sS)
+                kill $!
+                wait $! 2>/dev/null
             fi
             systemctl restart cloak-server
             echo "Done"
@@ -237,9 +237,9 @@ if [ -d "/etc/cloak" ]; then
             echo
             GetRandomPort LOCAL_PANEL_PORT
             ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json & #The & will make this to run in background
-            ckcpid=$!
-            RESTRICTED_UIDS=$(curl "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users")
-            kill $ckcpid
+            RESTRICTED_UIDS=$(curl "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users" -sS)
+            kill $!
+            wait $! 2>/dev/null
             mapfile -t UIDS_2 < <(jq -r '.[].UID?' <<< "$RESTRICTED_UIDS")
             clear
             echo "Here are the list of unrestricted users:"
