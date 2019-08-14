@@ -517,8 +517,8 @@ if [[ ${#proxyBook[@]} == 0 ]]; then
     exit 1
 fi
 #Install cloak https://gist.github.com/cbeuw/37a9d434c237840d7e6d5e497539c1ca#file-shadowsocks-ck-release-sh-L118
-url="https://github.com/cbeuw/Cloak/releases/download/v2.0.0/ck-server-linux-$arch-2.0.0"
-urlc="https://github.com/cbeuw/Cloak/releases/download/v2.0.0/ck-client-linux-$arch-2.0.0"
+url="https://github.com/cbeuw/Cloak/releases/download/v2.0.1/ck-server-linux-$arch-2.0.1"
+urlc="https://github.com/cbeuw/Cloak/releases/download/v2.0.1/ck-client-linux-$arch-2.0.1"
 #url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
 wget -O ck-server "$url"
 chmod +x ck-server
