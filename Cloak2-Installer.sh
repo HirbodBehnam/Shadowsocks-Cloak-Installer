@@ -516,6 +516,7 @@ if [[ ${#proxyBook[@]} == 0 ]]; then
     echo "Cannot forward nothing. Please at least choose one rule."
     exit 1
 fi
+#Install some stuff
 if [[ $distro =~ "CentOS" ]]; then
     yum -y install epel-release
     yum -y install wget jq curl
@@ -694,6 +695,10 @@ if [[ "$SHADOWSOCKS" == true ]]; then
         echo "Your system is not supported"
         exit 2
     fi
+    #Start haveged
+    systemctl start haveged
+    systemctl enable haveged
+    #Config shadowsocks
     rm -f /etc/shadowsocks-libev/config.json
     echo "{
     \"server\":\"127.0.0.1\",
