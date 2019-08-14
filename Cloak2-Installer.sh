@@ -516,6 +516,12 @@ if [[ ${#proxyBook[@]} == 0 ]]; then
     echo "Cannot forward nothing. Please at least choose one rule."
     exit 1
 fi
+if [[ $distro =~ "CentOS" ]]; then
+    yum -y install epel-release
+    yum -y install wget jq curl
+else
+    apt-get -y install wget jq curl
+fi
 #Install cloak https://gist.github.com/cbeuw/37a9d434c237840d7e6d5e497539c1ca#file-shadowsocks-ck-release-sh-L118
 url="https://github.com/cbeuw/Cloak/releases/download/v2.0.1/ck-server-linux-$arch-2.0.1"
 urlc="https://github.com/cbeuw/Cloak/releases/download/v2.0.1/ck-client-linux-$arch-2.0.1"
@@ -655,18 +661,18 @@ fi
 #Install and setup shadowsocks
 if [[ "$SHADOWSOCKS" == true ]]; then
     if [[ $distro =~ "CentOS" ]]; then
-        yum -y install epel-release yum-utils
+        yum -y install yum-utils
         yum-config-manager --add-repo https://copr.fedorainfracloud.org/coprs/librehat/shadowsocks/repo/epel-7/librehat-shadowsocks-epel-7.repo
-        yum -y install shadowsocks-libev
+        yum -y install shadowsocks-libev haveged qrencode
     elif [[ $distro =~ "Ubuntu" ]]; then
         if [[ $(lsb_release -r -s) =~ "18" ]] || [[ $(lsb_release -r -s) =~ "19" ]]; then 
             apt update
-            apt -y install shadowsocks-libev
+            apt -y install shadowsocks-libev haveged qrencode
         else
             apt-get install software-properties-common -y
             add-apt-repository ppa:max-c-lv/shadowsocks-libev -y
             apt-get update
-            apt-get -y install shadowsocks-libev
+            apt-get -y install shadowsocks-libev haveged qrencode
         fi
     elif [[ $distro =~ "Debian" ]]; then
         ver=$(cat /etc/debian_version)
@@ -675,11 +681,11 @@ if [[ "$SHADOWSOCKS" == true ]]; then
             sh -c 'printf "deb [check-valid-until=no] http://archive.debian.org/debian jessie-backports main\n" > /etc/apt/sources.list.d/jessie-backports.list' #https://unix.stackexchange.com/a/508728/331589
             echo "Acquire::Check-Valid-Until \"false\";" >> /etc/apt/apt.conf
             apt-get update
-            apt -y -t jessie-backports install shadowsocks-libev
+            apt -y -t jessie-backports install shadowsocks-libev haveged qrencode
         elif [ "$ver" == "9" ]; then
             sh -c 'printf "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list'
             apt update
-            apt -t stretch-backports install shadowsocks-libev
+            apt -t stretch-backports install shadowsocks-libev haveged qrencode
         else
             echo "Your debian is too old!"
             exit 2
