@@ -530,7 +530,7 @@ chmod +x ck-server
 mv ck-server /usr/local/bin
 #Install cloak client for post install management
 url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
-wget -O ck-client "$urlc"
+wget -O ck-client "$url"
 chmod +x ck-client
 mv ck-client /usr/local/bin
 #Ok lets talk about this:
