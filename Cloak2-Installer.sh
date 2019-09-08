@@ -6,7 +6,7 @@ function GetRandomPort(){
         echo "Generating random port please wait..."
         if [[ $distro =~ "CentOS" ]]; then
             yum -y -q install lsof
-        elif [[ $distro =~ "Ubuntu" ]] || [[ $distro =~ "Debian" ]]; then
+        elif [[ $distro =~ "Ubuntu" ]] || [[ $distro =~ "Debian" ]] || [[ $distro =~ "Raspbian" ]]; then
             apt-get -y install lsof > /dev/null
         fi
         local RETURN_CODE
@@ -322,7 +322,7 @@ if [ -d "/etc/cloak" ]; then
                 echo "firewall-cmd --permanent --add-port=$PORT/tcp"
             elif [[ $distro =~ "Ubuntu" ]]; then
                 echo "ufw allow $PORT/tcp"
-            elif [[ $distro =~ "Debian" ]]; then
+            elif [[ $distro =~ "Debian" ]] || [[ $distro =~ "Raspbian" ]]; then
                 echo "iptables -A INPUT -p tcp --dport $PORT --jump ACCEPT"
                 echo "iptables-save"
             fi
@@ -344,7 +344,7 @@ if [ -d "/etc/cloak" ]; then
                 elif [[ $distro =~ "Ubuntu" ]]; then
                     apt-get -y remove shadowsocks-libev
                     ufw delete allow "$PORT"/tcp
-                elif [[ $distro =~ "Debian" ]]; then
+                elif [[ $distro =~ "Debian" ]] || [[ $distro =~ "Raspbian" ]]; then
                     apt-get -y remove shadowsocks-libev
                     iptables -D INPUT -p tcp --dport "$PORT" --jump ACCEPT
                     iptables-save > /etc/iptables/rules.v4
@@ -447,7 +447,7 @@ if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
     fi
     #Get cipher
     default_cipher=15
-    if [[ $distro =~ "Debian" ]]; then
+    if [[ $distro =~ "Debian" ]] || [[ $distro =~ "Raspbian" ]]; then
         ver=$(cat /etc/debian_version)
         ver="${ver:0:1}"
         if [ "$ver" == "8" ]; then
@@ -652,10 +652,10 @@ elif [[ $distro =~ "Ubuntu" ]]; then
         ;;
         esac
     fi
-elif [[ $distro =~ "Debian" ]]; then
+elif [[ $distro =~ "Debian" ]] || [[ $distro =~ "Raspbian" ]]; then
     apt-get -y install iptables-persistent iptables
     iptables -A INPUT -p tcp --dport "$PORT" --jump ACCEPT
-    iptables-save > /etc/iptables/rules.v4  
+    iptables-save > /etc/iptables/rules.v4
 fi
 #Install and setup shadowsocks
 if [[ "$SHADOWSOCKS" == true ]]; then
@@ -689,6 +689,9 @@ if [[ "$SHADOWSOCKS" == true ]]; then
             echo "Your debian is too old!"
             exit 2
        fi
+    elif [[ $distro =~ "Raspbian" ]]; then
+       apt update
+       apt -y install shadowsocks-libev haveged qrencode
     else
         echo "Your system is not supported"
         exit 2

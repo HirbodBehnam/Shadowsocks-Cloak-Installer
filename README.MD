@@ -8,7 +8,7 @@ A script to install Cloak in your server with or without shadowsocks.
 * User Management
 * Automatic service configuration
 * Automatically setup firewall
-* Support Debian, Ubuntu and CentOS
+* Support Debian, Ubuntu, CentOS and Raspbian Buster
 ## What is [Cloak](https://github.com/cbeuw/Cloak)?
 Cloak is a universal pluggable transport that cryptographically obfuscates proxy traffic as legitimate HTTPS traffic, disguises the proxy server as a normal web server, multiplexes traffic through multiple TCP connections and provides multi-user usage control.
 
@@ -25,11 +25,13 @@ The script should work with these operating systems:
 * CentOS 7
 * Debian 8 / 9
 * Ubuntu 16 / 18 / 19
+* Raspbian Buster (Thanks to Raphael)
 
 arm, arm64, amd64 and i386 are supported.
 #### Tested On (I will test others too)
 * Ubuntu 18.04 LTS Server amd64
 * Centos 7 amd64
+* Raspbian Buster
 ### Installing Cloak 2 Plugin
 Copy and execute this command:
 ```bash
