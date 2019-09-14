@@ -447,8 +447,8 @@ elif [[ $distro =~ "Ubuntu" ]]; then
         esac
     fi
 elif [[ $distro =~ "Debian" ]]; then
-    ver=$(cat /etc/debian_version)
-    ver="${ver:0:1}"
+    ver=$(< /etc/debian_version)
+    ver="${ver%.*}"
     if [ "$ver" == "8" ]; then
         sh -c 'printf "deb [check-valid-until=no] http://archive.debian.org/debian jessie-backports main\n" > /etc/apt/sources.list.d/jessie-backports.list' #https://unix.stackexchange.com/a/508728/331589
         echo "Acquire::Check-Valid-Until \"false\";" >> /etc/apt/apt.conf
@@ -458,6 +458,10 @@ elif [[ $distro =~ "Debian" ]]; then
         sh -c 'printf "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list'
         apt update
         apt -t stretch-backports install shadowsocks-libev
+    elif [ "$ver" == "10" ]; then
+        sh -c 'printf "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/stretch-backports.list'
+        apt update
+        apt -t buster-backports install shadowsocks-libev
     else
         echo "Your debian is too old!"
         exit 2
