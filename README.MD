@@ -23,13 +23,14 @@ Cloak provides multi-user support, allowing multiple clients to connect to the p
 ### Compatibility
 The script should work with these operating systems:
 * CentOS 7
-* Debian 8 / 9
+* Debian 8 / 9 / 10 (Thanks to [@xiamaz](https://github.com/xiamaz))
 * Ubuntu 16 / 18 / 19
 * Raspbian Buster (Thanks to Raphael)
 
 arm, arm64, amd64 and i386 are supported.
 #### Tested On (I will test others too)
 * Ubuntu 18.04 LTS Server amd64
+* Debian 8 / 9 / 10 amd64
 * Centos 7 amd64
 * Raspbian Buster
 ### Installing Cloak 2 Plugin
