@@ -74,7 +74,7 @@ function ShowConnectionInfo(){
     echo "Cloak UID:            $ckuid"
     echo "Cloak Public Key:     $ckpub"
     echo "Cloak Encryption:     plain"
-    echo "Cloak Server Name:    Use anything you want (Defualt bing.com)"
+    echo "Cloak Server Name:    Use anything you want (Default bing.com)"
     echo "Cloak NumConn:        4 or more"
     echo "Cloak MaskBrowser:    firefox or chrome"
     echo "Also read more about these arguments at https://github.com/cbeuw/Cloak#client"
