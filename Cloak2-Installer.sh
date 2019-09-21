@@ -524,13 +524,15 @@ else
     apt-get -y install wget jq curl
 fi
 #Install cloak
-url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
+url="https://github.com/cbeuw/Cloak/releases/download/v2.0.2/ck-server-linux-$arch-2.0.2"
+urlc="https://github.com/cbeuw/Cloak/releases/download/v2.0.2/ck-client-linux-$arch-2.0.2"
+#url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
 wget -O ck-server "$url"
 chmod +x ck-server
 mv ck-server /usr/local/bin
 #Install cloak client for post install management
-url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
-wget -O ck-client "$url"
+#url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
+wget -O ck-client "$urlc"
 chmod +x ck-client
 mv ck-client /usr/local/bin
 #Ok lets talk about this:
