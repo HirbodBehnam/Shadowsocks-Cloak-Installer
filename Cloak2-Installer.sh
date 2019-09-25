@@ -12,7 +12,7 @@ function GetRandomPort() {
 		local RETURN_CODE
 		RETURN_CODE=$?
 		if [ $RETURN_CODE -ne 0 ]; then
-			echo "$(tput setaf 3)Warning!$(tput sgr 0) lsof package did not installed successfully. The randomized port may be in use."
+			PrintWarning "lsof package did not installed successfully. The randomized port may be in use."
 		else
 			INSTALLED_LSOF=true
 		fi
@@ -23,14 +23,24 @@ function GetRandomPort() {
 	fi
 	eval "$__resultvar"="$PORTL"
 }
+function PrintWarning(){
+	echo "$(tput setaf 3)Warning!$(tput sgr 0) $1"
+}
 function GenerateProxyBook() {
+	#Format of the proxy book is arr[method] = "(t/u)ip:port"
 	PROXY_BOOK=""
 	for method in "${!proxyBook[@]}"; do
 		PROXY_BOOK+='"'
 		PROXY_BOOK+=$method
-		PROXY_BOOK+='":"'
-		PROXY_BOOK+=${proxyBook[$method]}
-		PROXY_BOOK+='" , '
+		PROXY_BOOK+='":["'
+		s=${proxyBook[$method]}
+		if [[ ${s:0:1} == "t" ]]; then #At first check the TCP
+			PROXY_BOOK+='tcp","'
+		else #UDP
+			PROXY_BOOK+='udp","'
+		fi
+		PROXY_BOOK+=${s:1}
+		PROXY_BOOK+='"] , '
 	done
 	PROXY_BOOK=${PROXY_BOOK::${#PROXY_BOOK}-2}
 }
@@ -42,7 +52,8 @@ function WriteClientFile() {
 	\"PublicKey\":\"$ckpub\",
 	\"ServerName\":\"$ckwebaddr\",
 	\"NumConn\":4,
-	\"BrowserSig\":\"chrome\"
+	\"BrowserSig\":\"chrome\",
+	\"StreamTimeout\": 300
 }" >>"$ckclient_name.json"
 }
 function ListAllUIDs() {
@@ -75,6 +86,7 @@ function ShowConnectionInfo() {
 	echo "Cloak Server Name:    Use anything you want (Default bing.com)"
 	echo "Cloak NumConn:        4 or more"
 	echo "Cloak MaskBrowser:    firefox or chrome"
+	echo "Cloak StreamTimeout:	300"
 	echo "Also read more about these arguments at https://github.com/cbeuw/Cloak#client"
 	echo
 	echo "Download cloak client for android from https://github.com/cbeuw/Cloak-android/releases"
@@ -85,7 +97,7 @@ function ShowConnectionInfo() {
 	ckpub=$(echo "$ckpub" | sed -r 's/=/\\=/g')
 	ckuid=$(echo "$ckuid" | sed -r 's/=/\\=/g')
 	SERVER_BASE64=$(printf "%s" "$cipher:$Password" | base64)
-	SERVER_CLOAK_ARGS="ck-client;UID=$ckuid;PublicKey=$ckpub;ServerName=bing.com;BrowserSig=chrome;NumConn=4;ProxyMethod=shadowsocks;EncryptionMethod=plain"
+	SERVER_CLOAK_ARGS="ck-client;UID=$ckuid;PublicKey=$ckpub;ServerName=bing.com;BrowserSig=chrome;NumConn=4;ProxyMethod=shadowsocks;EncryptionMethod=plain;StreamTimeout=300"
 	SERVER_CLOAK_ARGS=$(printf "%s" "$SERVER_CLOAK_ARGS" | curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-) #https://stackoverflow.com/a/10797966/4213397
 	SERVER_BASE64="ss://$SERVER_BASE64@$PUBLIC_IP:$PORT?plugin=$SERVER_CLOAK_ARGS"
 	qrencode -t ansiutf8 "$SERVER_BASE64"
@@ -131,7 +143,7 @@ if [ -d "/etc/cloak" ]; then
 			DownCredit=$((DownCredit * 1048576))
 			UpCredit=$((UpCredit * 1048576))
 			GetRandomPort LOCAL_PANEL_PORT
-			ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json &#The & will make this to run in background
+			ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json & #The & will make this to run in background
 			ckencoded=$(echo "$ckbuid" | tr '+' '-' | tr '/' '_')                                                                  #Encode just like https://github.com/cbeuw/Cloak-panel/blob/master/script/endpoint.js#L38
 			curl -d "UserInfo={\"UID\":\"$ckbuid\",\"SessionsCap\":$CAP,\"UpRate\":$UpRate,\"DownRate\":$DownRate,\"UpCredit\":$UpCredit,\"DownCredit\":$DownCredit,\"ExpiryTime\":$ValidDays}" -X POST "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users/$ckencoded"
 			kill $!
@@ -372,9 +384,9 @@ if [ "$PORT" -gt 65535 ]; then
 	exit 1
 fi
 #Set redirect ip for cloak; Just like https://gist.github.com/cbeuw/37a9d434c237840d7e6d5e497539c1ca#file-shadowsocks-ck-release-sh-L165
-echo -e "Please enter a redirection IP for Cloak (leave blank to set it to 204.79.197.200:443 of bing.com): "
+echo -e "Please enter a redirection IP for Cloak (leave blank to set it to 204.79.197.200 of bing.com): "
 read -r -p "" ckwebaddr
-[ -z "$ckwebaddr" ] && ckwebaddr="204.79.197.200:443"
+[ -z "$ckwebaddr" ] && ckwebaddr="204.79.197.200"
 #Check arch
 arch=$(uname -m)
 case $arch in
@@ -398,7 +410,7 @@ case $arch in
 esac
 if [ "$arch" == "0" ]; then
 	arch=1
-	echo "$(tput setaf 3)Warning!$(tput sgr 0) Cannot automatically determine architecture."
+	PrintWarning "Cannot automatically determine architecture."
 fi
 echo "1) 386"
 echo "2) amd64"
@@ -481,7 +493,7 @@ if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
 		;;
 	esac
 	GetRandomPort SS_PORT
-	proxyBook+=(["shadowsocks"]="127.0.0.1:$SS_PORT")
+	proxyBook+=(["shadowsocks"]="t127.0.0.1:$SS_PORT")
 fi
 #Setup other stuff
 read -r -p "Do you want add a custom rule to Cloak?(y/n) " -e -i "n" OPTION
@@ -492,9 +504,17 @@ if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
 	echo "If you want to configure Tor with Cloak read here: https://github.com/cbeuw/Cloak/wiki/Underlying-proxy-configuration-guides#tor"
 	echo "If you have not installed the Openvpn or Tor yet, you can either choose a port for them here and install them later, or Ctrl+C here and go install them, then re-run the script again."
 	echo
+	PrintWarning "Please do not use special characters in \"ProxyMethod\"."
+	PrintWarning "If you wish to add a UDP destination, at client you should run ck-client with \"-u\" argument."
 	while true; do
 		read -r -p "Where the traffic should be forwarded?(For example 127.0.0.1:6252) " ADDRESS
 		read -r -p "What should this be called? Clients must use this name as \"ProxyMethod\" on their computers: " METHOD
+		read -r -p "Is this a TCP connection?(y/n): " -e -i "y" OPTION
+		if [[ $OPTION == "n" ]] || [[ $OPTION == "N" ]]; then
+			ADDRESS=d$ADDRESS
+		else
+			ADDRESS=t$ADDRESS
+		fi
 		proxyBook+=(["$METHOD"]="$ADDRESS")
 		read -r -p "Do you want add another custom rule to Cloak?(y/n) " -e -i "n" OPTION
 		if [[ $OPTION == "n" ]] || [[ $OPTION == "N" ]]; then
@@ -514,21 +534,21 @@ else
 	apt-get -y install wget jq curl
 fi
 #Install cloak
-url="https://github.com/cbeuw/Cloak/releases/download/v2.0.2/ck-server-linux-$arch-2.0.2"
-urlc="https://github.com/cbeuw/Cloak/releases/download/v2.0.2/ck-client-linux-$arch-2.0.2"
-#url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
+#url="https://github.com/cbeuw/Cloak/releases/download/v2.0.2/ck-server-linux-$arch-2.0.2"
+#urlc="https://github.com/cbeuw/Cloak/releases/download/v2.0.2/ck-client-linux-$arch-2.0.2"
+url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
 wget -O ck-server "$url"
 chmod +x ck-server
 mv ck-server /usr/local/bin
 #Install cloak client for post install management
-#url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
-wget -O ck-client "$urlc"
+url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
+wget -O ck-client "$url"
 chmod +x ck-client
 mv ck-client /usr/local/bin
 #Ok lets talk about this:
-Local_Address_Book_For_Admin="LForPanel"
-#This is a id created for proxy book to make local admin connection though this script. Also the forwarding address will be 127.0.0.1:65536; This port does not exist so it points out to nowhere and can be only used for admin panel
-proxyBook+=(["$Local_Address_Book_For_Admin"]="127.0.0.1:65536")
+Local_Address_Book_For_Admin="panel"
+#This is a id created for proxy book to make local admin connection though this script. Also the forwarding address will be 127.0.0.1:0; This port does not exist so it points out to nowhere and can be only used for admin panel
+proxyBook+=(["$Local_Address_Book_For_Admin"]="t127.0.0.1:0")
 GenerateProxyBook #Generate json style proxy book
 #Download and install Cloak
 mkdir /etc/cloak
@@ -545,10 +565,12 @@ echo "{
     \"$ckaauid\",
     \"$ckbuid\"
   ],
+  \"BindAddr\":[\":$PORT\"],
   \"RedirAddr\": \"$ckwebaddr\",
   \"PrivateKey\": \"$ckpv\",
   \"AdminUID\": \"$ckauid\",
-  \"DatabasePath\": \"userinfo.db\"
+  \"DatabasePath\": \"userinfo.db\",
+  \"StreamTimeout\": 300
 }" >>ckserver.json
 echo "PORT=$PORT
 ckaauid=\"$ckaauid\"" >>ckport.txt
@@ -559,7 +581,8 @@ echo "{
 	\"PublicKey\":\"$ckpub\",
 	\"ServerName\":\"www.bing.com\",
 	\"NumConn\":1,
-	\"BrowserSig\":\"chrome\"
+	\"BrowserSig\":\"chrome\",
+	\"StreamTimeout\": 300
 }" >>ckadminclient.json
 ckcrypt="aes-gcm" #Play it safe
 for ckmethod in "${!proxyBook[@]}"; do
@@ -587,7 +610,7 @@ Type=simple
 User=root
 Group=root
 LimitNOFILE=32768
-ExecStart=/usr/local/bin/ck-server -c ckserver.json -p $PORT
+ExecStart=/usr/local/bin/ck-server -c ckserver.json
 WorkingDirectory=/etc/cloak
 
 [Install]
