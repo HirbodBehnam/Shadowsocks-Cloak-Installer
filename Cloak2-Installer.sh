@@ -188,9 +188,19 @@ if [ -d "/etc/cloak" ]; then
 			OPTION=$((OPTION - 1))
 			ckmethod=${OPTIONS[OPTION]}
 			read -r -p "Choose a file name for the client file: " ckclient_name
-			ckpub=$(jq '.PublicKey' ckadminclient.json)
+			ckpub=$(jq -r '.PublicKey' ckadminclient.json)
+			ckwebaddr="204.79.197.200"
 			WriteClientFile
 			if [[ "$ckmethod" == "shadowsocks" ]]; then
+				echo "Please wait..."
+				PUBLIC_IP="$(curl https://api.ipify.org -sS)"
+				CURL_EXIT_STATUS=$?
+				if [ $CURL_EXIT_STATUS -ne 0 ]; then
+					PUBLIC_IP="YOUR_IP"
+				fi
+				cipher=$(jq -r '.method' <'/etc/shadowsocks-libev/config.json')
+				Password=$(jq -r '.password' <'/etc/shadowsocks-libev/config.json')
+				ckuid="$ckbuid"
 				ShowConnectionInfo
 			fi
 			echo "Sample file saved at /etc/cloak/$ckclient_name.json"
