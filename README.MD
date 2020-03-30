@@ -1,3 +1,4 @@
+
 # Cloak Installer With Shadowsocks
 A script to install Cloak in your server with or without shadowsocks.
 
@@ -12,7 +13,7 @@ A script to install Cloak in your server with or without shadowsocks.
 ## What is [Cloak](https://github.com/cbeuw/Cloak)?
 Cloak is a universal pluggable transport that cryptographically obfuscates proxy traffic as legitimate HTTPS traffic, disguises the proxy server as a normal web server, multiplexes traffic through multiple TCP connections and provides multi-user usage control.
 
-Cloak eliminates any "fingerprints" exposed by traditional proxy protocol designs which can be identified by adversaries through deep packet inspection. If a non-Cloak program or an unauthorized Cloak user (such as an adversary's prober) attempts to connect to Cloak server, it will serve as a transparent proxy between said machine and an ordinary website, so that to any unauthorized third party, a host running Cloak server is indistinguishable from an innocent web server. This is achieved through the use a series of [cryptographic stegnatography techniques](https://github.com/cbeuw/Cloak/wiki/Steganography-and-encryption).
+Cloak eliminates any "fingerprints" exposed by traditional proxy protocol designs which can be identified by adversaries through deep packet inspection. If a non-Cloak program or an unauthorized Cloak user (such as an adversary's prober) attempts to connect to Cloak server, it will serve as a transparent proxy between said machine and an ordinary website, so that to any unauthorized third party, a host running Cloak server is indistinguishable from an innocent web server. This is achieved through the use a series of [cryptographic steganography techniques](https://github.com/cbeuw/Cloak/wiki/Steganography-and-encryption).
 
 Since Cloak is transparent, it can be used in conjunction with any proxy software that tunnels traffic through TCP, such as Shadowsocks, OpenVPN and Tor. Multiple proxy servers can be running on the same server host machine and Cloak server will act as a reverse proxy, bridging clients with their desired proxy end.
 
@@ -69,7 +70,7 @@ ss-local -s <SERVER_IP> -p <SERVER_PORT> -l 1080 -k <SERVER_PASSWORD> -m <ENCRYP
 ```
 You can connect to your shadowsocks with socks or http proxy set on localhost and 1080 port.
 ### iOS
-Unfortunately cloak does not support iOS. (Most of the plugins does not work with iOS) Use shadowsocks without plugin. [Here](https://github.com/teddysun/shadowsocks_install/tree/master) is a script that you can install shadowsocks without plugin on your server.
+It look like that [this](https://apps.apple.com/us/app/shadowrocket/id932747118) app does support cloak but I haven't tested it.
 ### Windows
 At first install [shadowsocks windows](https://github.com/shadowsocks/shadowsocks-windows/releases). Then download cloak for windows from [here](https://github.com/cbeuw/Cloak/releases). If you are using a 32-bit system, download `ck-client-windows-386-X.exe
 ` if your system is 64-bit use `ck-client-windows-amd64-X.exe`. Then use the QR Code or `ss://` link to import the server.
