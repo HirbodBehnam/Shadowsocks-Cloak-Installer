@@ -26,8 +26,13 @@ function GetRandomPort() {
 function PrintWarning(){
 	echo "$(tput setaf 3)Warning!$(tput sgr 0) $1"
 }
+function RunCloakAdmin(){
+	ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json & #The & will make this to run in background
+	echo "Please wait 5 seconds to let the ck-client start..."
+	sleep 5 # you can change this number if you like
+}
 function GenerateProxyBook() {
-	#Format of the proxy book is arr[method] = "(t/u)ip:port"
+	#Format of the proxy book is arr[method] = "(t/d)ip:port"
 	PROXY_BOOK=""
 	for method in "${!proxyBook[@]}"; do
 		PROXY_BOOK+='"'
@@ -67,7 +72,7 @@ function ListAllUIDs() {
 	unset new_array
 	#Now list all of the restricted users
 	GetRandomPort LOCAL_PANEL_PORT
-	ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json &#The & will make this to run in background
+	RunCloakAdmin
 	RESTRICTED_UIDS=$(curl http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users -sS)
 	kill $!
 	wait $! 2>/dev/null
@@ -143,9 +148,9 @@ if [ -d "/etc/cloak" ]; then
 			DownCredit=$((DownCredit * 1048576))
 			UpCredit=$((UpCredit * 1048576))
 			GetRandomPort LOCAL_PANEL_PORT
-			ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json & #The & will make this to run in background
-			ckencoded=$(echo "$ckbuid" | tr '+' '-' | tr '/' '_')                                                                  #Encode just like https://github.com/cbeuw/Cloak-panel/blob/master/script/endpoint.js#L38
-			curl -d "UserInfo={\"UID\":\"$ckbuid\",\"SessionsCap\":$CAP,\"UpRate\":$UpRate,\"DownRate\":$DownRate,\"UpCredit\":$UpCredit,\"DownCredit\":$DownCredit,\"ExpiryTime\":$ValidDays}" -X POST "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users/$ckencoded"
+			RunCloakAdmin
+			ckencoded=$(echo "$ckbuid" | tr '+' '-' | tr '/' '_') #Encode just like https://github.com/cbeuw/Cloak-panel/blob/master/script/endpoint.js#L38
+			curl --data-urlencode "UserInfo={\"UID\":\"$ckbuid\",\"SessionsCap\":$CAP,\"UpRate\":$UpRate,\"DownRate\":$DownRate,\"UpCredit\":$UpCredit,\"DownCredit\":$DownCredit,\"ExpiryTime\":$ValidDays}" -X POST "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users/$ckencoded"
 			kill $!
 			wait $! 2>/dev/null
 		else
@@ -189,7 +194,7 @@ if [ -d "/etc/cloak" ]; then
 			ckmethod=${OPTIONS[OPTION]}
 			read -r -p "Choose a file name for the client file: " ckclient_name
 			ckpub=$(jq -r '.PublicKey' ckadminclient.json)
-			ckwebaddr="204.79.197.200"
+			ckwebaddr="www.bing.com"
 			WriteClientFile
 			if [[ "$ckmethod" == "shadowsocks" ]]; then
 				echo "Please wait..."
@@ -205,7 +210,7 @@ if [ -d "/etc/cloak" ]; then
 			fi
 			echo "Sample file saved at /etc/cloak/$ckclient_name.json"
 		else
-			echo "Ok one more here is your UDID: $ckbuid"
+			echo "Ok once more here is your UDID: $ckbuid"
 			echo "You can list it again later with running this script again."
 		fi
 		systemctl restart cloak-server
@@ -221,6 +226,7 @@ if [ -d "/etc/cloak" ]; then
 			COUNTER=$((COUNTER + 1))
 		done
 		read -r -p "Which UID you want to revoke?(Choose by number) " OPTION
+		OPTION=$((OPTION - 1))
 		UID_TO_REMOVE=${UIDS[OPTION]}
 		#Check if the user is in unrestricted users
 		mapfile -t UIDS < <(jq -r '.BypassUID[]' ckserver.json)
@@ -235,9 +241,9 @@ if [ -d "/etc/cloak" ]; then
 			rm ckserver.json
 			"$conf" >>ckserver.json
 		else
-			ckencoded=$(echo "$UID_TO_REMOVE" | tr '+' '-' | tr '/' '_')                                                           #Encode just like https://github.com/cbeuw/Cloak-panel/blob/master/script/endpoint.js#L38
-			ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json &#The & will make this to run in background
-			RESTRICTED_UIDS=$(curl -X "DELETE" "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users/$UID_TO_REMOVE" -sS)
+			ckencoded=$(echo "$UID_TO_REMOVE" | tr '+' '-' | tr '/' '_')  #Encode just like https://github.com/cbeuw/Cloak-panel/blob/master/script/endpoint.js#L38
+			RunCloakAdmin
+			RESTRICTED_UIDS=$(curl -X "DELETE" "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users/$ckencoded" -sS)
 			kill $!
 			wait $! 2>/dev/null
 		fi
@@ -253,7 +259,7 @@ if [ -d "/etc/cloak" ]; then
 		#Now print all of the other users
 		echo
 		GetRandomPort LOCAL_PANEL_PORT
-		ck-client -s 127.0.0.1 -p $PORT -a "$(jq -r '.AdminUID' ckserver.json)" -l "$LOCAL_PANEL_PORT" -c ckadminclient.json &#The & will make this to run in background
+		RunCloakAdmin
 		RESTRICTED_UIDS=$(curl "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users" -sS)
 		kill $!
 		wait $! 2>/dev/null
@@ -463,7 +469,7 @@ if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
 		ver=$(cat /etc/debian_version)
 		ver="${ver:0:1}"
 		if [ "$ver" == "8" ]; then
-			default_cipher=2
+			default_cipher=13
 			ciphers=(rc4-md5 aes-128-cfb aes-192-cfb aes-256-cfb aes-128-ctr aes-192-ctr aes-256-ctr bf-cfb camellia-128-cfb camellia-192-cfb camellia-256-cfb salsa20 chacha20)
 		fi
 	fi
