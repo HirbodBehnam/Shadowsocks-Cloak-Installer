@@ -363,8 +363,8 @@ if [ -d "/etc/cloak" ]; then
 			fi
 			rm -rf /etc/shadowsocks-libev
 			rm -rf /etc/cloak
-			rm -f /usr/local/bin/ck-server
-			rm -f /usr/local/bin/ck-client
+			rm -f /usr/bin/ck-server
+			rm -f /usr/bin/ck-client
 			echo "Done"
 			echo "Please reboot the server for a clean uninstall."
 		fi
@@ -549,12 +549,12 @@ fi
 url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
 wget -O ck-server "$url"
 chmod +x ck-server
-mv ck-server /usr/local/bin
+mv ck-server /usr/bin
 #Install cloak client for post install management
 url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
 wget -O ck-client "$url"
 chmod +x ck-client
-mv ck-client /usr/local/bin
+mv ck-client /usr/bin
 #Ok lets talk about this:
 Local_Address_Book_For_Admin="panel"
 #This is a id created for proxy book to make local admin connection though this script. Also the forwarding address will be 127.0.0.1:0; This port does not exist so it points out to nowhere and can be only used for admin panel
@@ -620,7 +620,7 @@ Type=simple
 User=root
 Group=root
 LimitNOFILE=32768
-ExecStart=/usr/local/bin/ck-server -c ckserver.json
+ExecStart=/usr/bin/ck-server -c ckserver.json
 WorkingDirectory=/etc/cloak
 
 [Install]
