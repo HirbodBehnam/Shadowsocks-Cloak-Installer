@@ -239,7 +239,7 @@ if [ -d "/etc/cloak" ]; then
 		if [[ $UNRESTRICTED_UID == true ]]; then
 			conf=$(jq --arg key "$UID_TO_REMOVE" '.BypassUID -= [$key]' <ckserver.json)
 			rm ckserver.json
-			"$conf" >>ckserver.json
+			echo "$conf" >>ckserver.json
 		else
 			ckencoded=$(echo "$UID_TO_REMOVE" | tr '+' '-' | tr '/' '_')  #Encode just like https://github.com/cbeuw/Cloak-panel/blob/master/script/endpoint.js#L38
 			RunCloakAdmin
