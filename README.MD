@@ -85,7 +85,9 @@ At first download the suitable plugin from [here](https://github.com/cbeuw/Cloak
 If you need to setup Tor or Openvpn with Cloak read [here](https://github.com/cbeuw/Cloak/wiki/Underlying-puration-guides)
 ## Next Steps
 ### FAQ
-[Here](https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/wiki/FAQ)
+[Cloak V1 FAQ](https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer/wiki/FAQ)
+
+Cloak V2 FAQ (Soon...)
 ### BBR
 At first what is BBR?
 
