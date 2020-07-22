@@ -155,8 +155,7 @@ if [ -d "/etc/cloak" ]; then
 			wait $! 2>/dev/null
 		else
 			conf=$(jq --arg key "$ckbuid" '.BypassUID += [$key]' <ckserver.json)
-			rm ckserver.json
-			echo "$conf" >>ckserver.json
+			echo "$conf" >ckserver.json
 		fi
 		echo "Ok here is the UID: $ckbuid"
 		read -r -p "Do you want me to generate a config file for it?(y/n) " -e -i "n" OPTION
@@ -619,7 +618,6 @@ for ckmethod in "${!proxyBook[@]}"; do
 	fi
 done
 #Create service for Cloak
-rm /etc/systemd/system/cloak-server.service
 echo "[Unit]
 Description=Cloak Server Service
 After=network-online.target
@@ -634,7 +632,7 @@ ExecStart=/usr/bin/ck-server -c ckserver.json
 WorkingDirectory=/etc/cloak
 
 [Install]
-WantedBy=multi-user.target" >>/etc/systemd/system/cloak-server.service
+WantedBy=multi-user.target" >/etc/systemd/system/cloak-server.service
 systemctl daemon-reload
 systemctl start cloak-server
 systemctl enable cloak-server
@@ -738,7 +736,6 @@ if [[ "$SHADOWSOCKS" == true ]]; then
 	systemctl start haveged
 	systemctl enable haveged
 	#Config shadowsocks
-	rm -f /etc/shadowsocks-libev/config.json
 	echo "{
     \"server\":\"127.0.0.1\",
     \"server_port\":$SS_PORT,
@@ -746,7 +743,7 @@ if [[ "$SHADOWSOCKS" == true ]]; then
     \"timeout\":60,
     \"method\":\"$cipher\",
     \"nameserver\":\"$ss_dns\"
-}" >>/etc/shadowsocks-libev/config.json
+}" >/etc/shadowsocks-libev/config.json
 	systemctl daemon-reload
 	systemctl restart shadowsocks-libev
 	systemctl enable shadowsocks-libev
