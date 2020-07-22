@@ -647,6 +647,7 @@ if [[ $distro =~ "CentOS" ]]; then
 		"y" | "Y")
 			yum -y install firewalld
 			systemctl enable firewalld
+			systemctl start firewalld
 			;;
 		*)
 			SETFIREWALL=false
@@ -654,7 +655,6 @@ if [[ $distro =~ "CentOS" ]]; then
 		esac
 	fi
 	if [ "$SETFIREWALL" = true ]; then
-		systemctl start firewalld
 		firewall-cmd --zone=public --add-port="$PORT"/tcp
 		firewall-cmd --runtime-to-permanent
 	fi
