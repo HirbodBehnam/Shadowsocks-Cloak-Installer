@@ -309,26 +309,30 @@ if [ -d "/etc/cloak" ]; then
 		if [[ "$OPTION" == 1 ]]; then
 			read -r -p "Where the traffic should be forwarded?(For example 127.0.0.1:6252) " ADDRESS
 			read -r -p "What should this be called? Clients must use this name as \"ProxyMethod\" on their computers: " METHOD
-			conf=$(jq -r --arg "$METHOD" "$ADDRESS" '.ProxyBook += {$k}' ckserver.json)
-			rm ckserver.json
-			echo "$conf" >>ckserver.json
+			read -r -p "Is this a TCP connection?(y/n): " -e -i "y" OPTION
+			if [[ $OPTION == "n" ]] || [[ $OPTION == "N" ]]; then
+				PROTOCOL="udp"
+			else
+				PROTOCOL="tcp"
+			fi
+			conf=$(jq --arg m "$METHOD" --arg a "$ADDRESS" --arg p "$PROTOCOL" '.ProxyBook[$m] = [$p,$a]' ckserver.json)
+			echo "$conf" > ckserver.json
 		elif [[ "$OPTION" == 2 ]]; then
-			mapfile -t Rules < <(jq --arg k "$METHOD" --arg v "$ADDRESS" '.ProxyBook[$k] = $v' ckserver.json)
+			mapfile -t Rules < <(jq -r '.ProxyBook | keys[]' ckserver.json)
 			COUNTER=1
 			for i in "${Rules[@]}"; do
 				echo "$COUNTER) $i"
 				COUNTER=$((COUNTER + 1))
 			done
 			read -r -p "Which UID you want to see it's link?(Choose by number) " OPTION
-			if [[ "$OPTION" == 1 ]]; then
+			OPTION=$((OPTION - 1))
+			OPTION=${Rules[OPTION]}
+			if [[ "$OPTION" == "panel" ]]; then
 				echo "This is a reserved rule for this script and usermanagment. Cannot delete it."
 				exit
 			fi
-			OPTION=$((OPTION - 1))
-			OPTION=${Rules[OPTION]}
 			conf=$(jq --arg k "$OPTION" 'del(.ProxyBook[$k])' ckserver.json)
-			rm ckserver.json
-			echo "$conf" >>ckserver.json
+			echo "$conf" >ckserver.json
 		fi
 		systemctl restart cloak-server
 		echo "Done"
