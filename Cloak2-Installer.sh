@@ -307,7 +307,12 @@ if [ -d "/etc/cloak" ]; then
 		read -r -p "Choose by number: " OPTION
 		if [[ "$OPTION" == 1 ]]; then
 			read -r -p "Where the traffic should be forwarded?(For example 127.0.0.1:6252) " ADDRESS
+			PrintWarning "Please only use lowercase english characters in \"ProxyMethod\"."
 			read -r -p "What should this be called? Clients must use this name as \"ProxyMethod\" on their computers: " METHOD
+			if [[ ${#METHOD} -gt 12 ]]; then
+				echo "Please choose a method that is less than 12 characters"
+				exit 1
+			fi
 			read -r -p "Is this a TCP connection?(y/n): " -e -i "y" OPTION
 			if [[ $OPTION == "n" ]] || [[ $OPTION == "N" ]]; then
 				PROTOCOL="udp"
@@ -523,11 +528,15 @@ if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
 	echo "If you want to configure Tor with Cloak read here: https://github.com/cbeuw/Cloak/wiki/Underlying-proxy-configuration-guides#tor"
 	echo "If you have not installed the Openvpn or Tor yet, you can either choose a port for them here and install them later, or Ctrl+C here and go install them, then re-run the script again."
 	echo
-	PrintWarning "Please do not use special characters in \"ProxyMethod\"."
+	PrintWarning "Please only use lowercase english characters in \"ProxyMethod\"."
 	PrintWarning "If you wish to add a UDP destination, at client you should run ck-client with \"-u\" argument."
 	while true; do
 		read -r -p "Where the traffic should be forwarded?(For example 127.0.0.1:6252) " ADDRESS
 		read -r -p "What should this be called? Clients must use this name as \"ProxyMethod\" on their computers: " METHOD
+		if [[ ${#METHOD} -gt 12 ]]; then
+			echo "Please choose a method that is less than 12 characters"
+			continue
+		fi
 		read -r -p "Is this a TCP connection?(y/n): " -e -i "y" OPTION
 		if [[ $OPTION == "n" ]] || [[ $OPTION == "N" ]]; then
 			ADDRESS=d$ADDRESS
