@@ -408,9 +408,9 @@ if [ "$PORT" -gt 65535 ]; then
 	exit 1
 fi
 #Set redirect ip for cloak; Just like https://gist.github.com/cbeuw/37a9d434c237840d7e6d5e497539c1ca#file-shadowsocks-ck-release-sh-L165
-echo -e "Please enter a redirection IP for Cloak (leave blank to set it to 204.79.197.200 of bing.com): "
+echo -e "Please enter a redirection IP and port for Cloak (leave blank to set it to 204.79.197.200:443 of bing.com): "
 read -r -p "" ckwebaddr
-[ -z "$ckwebaddr" ] && ckwebaddr="204.79.197.200"
+[ -z "$ckwebaddr" ] && ckwebaddr="204.79.197.200:443"
 #Check arch
 arch=$(uname -m)
 case $arch in
