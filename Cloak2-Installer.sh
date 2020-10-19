@@ -150,7 +150,7 @@ if [ -d "/etc/cloak" ]; then
 			GetRandomPort LOCAL_PANEL_PORT
 			RunCloakAdmin
 			ckencoded=$(echo "$ckbuid" | tr '+' '-' | tr '/' '_') #Encode just like https://github.com/cbeuw/Cloak-panel/blob/master/script/endpoint.js#L38
-			curl --data-urlencode "UserInfo={\"UID\":\"$ckbuid\",\"SessionsCap\":$CAP,\"UpRate\":$UpRate,\"DownRate\":$DownRate,\"UpCredit\":$UpCredit,\"DownCredit\":$DownCredit,\"ExpiryTime\":$ValidDays}" -X POST "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users/$ckencoded"
+			curl --header "Content-Type: application/json" --data "{\"UID\":\"$ckbuid\",\"SessionsCap\":$CAP,\"UpRate\":$UpRate,\"DownRate\":$DownRate,\"UpCredit\":$UpCredit,\"DownCredit\":$DownCredit,\"ExpiryTime\":$ValidDays}" -X POST "http://127.0.0.1:$LOCAL_PANEL_PORT/admin/users/$ckencoded"
 			kill $!
 			wait $! 2>/dev/null
 		else
