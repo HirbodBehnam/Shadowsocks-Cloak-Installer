@@ -705,7 +705,7 @@ if [[ "$SHADOWSOCKS" == true ]]; then
 		yum-config-manager --add-repo https://copr.fedorainfracloud.org/coprs/librehat/shadowsocks/repo/epel-7/librehat-shadowsocks-epel-7.repo
 		yum -y install shadowsocks-libev haveged qrencode
 	elif [[ $distro =~ "Ubuntu" ]]; then
-		if [[ $(lsb_release -r -s) =~ "18" ]] || [[ $(lsb_release -r -s) =~ "19" ]]; then
+		if [[ $(lsb_release -r -s) =~ "18" ]] || [[ $(lsb_release -r -s) =~ "19" ]] || [[ $(lsb_release -r -s) =~ "20" ]]; then
 			apt update
 			apt -y install shadowsocks-libev haveged qrencode
 		else
