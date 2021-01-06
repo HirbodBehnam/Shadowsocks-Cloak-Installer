@@ -161,16 +161,16 @@ if [ -d "/etc/cloak" ]; then
 		read -r -p "Do you want me to generate a config file for it?(y/n) " -e -i "n" OPTION
 		if [[ "$OPTION" == "y" ]] || [[ "$OPTION" == "Y" ]]; then
 			echo "1) plain"
-			echo "2) aes-gcm-128"
-			echo "2) aes-gcm-256"
-			echo "3) chacha20-poly1305"
+			echo "2) aes-128-gcm"
+			echo "3) aes-256-gcm"
+			echo "4) chacha20-poly1305"
 			read -r -p "Which encryption method you want to use?[1~3]: " -e -i 2 OPTION
 			case $OPTION in
 			2)
-				ckcrypt="aes-gcm-128"
+				ckcrypt="aes-128-gcm"
 				;;
 			3)
-				ckcrypt="aes-gcm-256"
+				ckcrypt="aes-256-gcm"
 				;;
 			4)
 				ckcrypt="chacha20-poly1305"
@@ -616,7 +616,7 @@ echo "{
 	\"BrowserSig\":\"chrome\",
 	\"StreamTimeout\": 300
 }" >>ckadminclient.json
-ckcrypt="aes-gcm-128" #Play it safe; Why 128 bit? Most of the traffic in sites are encrypted with 128 bit key
+ckcrypt="aes-128-gcm" #Play it safe; Why 128 bit? Most of the traffic in sites are encrypted with 128 bit key
 for ckmethod in "${!proxyBook[@]}"; do
 	if [[ "$ckmethod" == "$Local_Address_Book_For_Admin" ]]; then
 		continue
@@ -625,7 +625,7 @@ for ckmethod in "${!proxyBook[@]}"; do
 	if [[ "$ckmethod" == "shadowsocks" ]]; then
 		ckcrypt="plain"
 		WriteClientFile
-		ckcrypt="aes-gcm-128"
+		ckcrypt="aes-128-gcm"
 	else
 		WriteClientFile
 	fi
