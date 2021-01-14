@@ -110,6 +110,54 @@ function ShowConnectionInfo() {
 	echo
 	echo "Or just use this string: $SERVER_BASE64"
 }
+function GetArch(){
+	arch=$(uname -m)
+	case $arch in
+	"i386" | "i686") ;;
+	"x86_64")
+		arch=2
+		;;
+	*)
+		if [[ "$arch" =~ "armv" ]]; then
+			arch=${arch:4:1}
+			if [ "$arch" -gt 7 ]; then
+				arch=4
+			else
+				arch=3
+			fi
+		else
+			arch=0
+		fi
+		;;
+	esac
+	if [ "$arch" == "0" ]; then
+		arch=1
+		PrintWarning "Cannot automatically determine architecture."
+	fi
+	echo "1) 386"
+	echo "2) amd64"
+	echo "3) arm"
+	echo "4) arm64"
+	read -r -p "Select your architecture: " -e -i $arch arch
+	case $arch in
+	1)
+		arch="386"
+		;;
+	2)
+		arch="amd64"
+		;;
+	3)
+		arch="arm"
+		;;
+	4)
+		arch="arm64"
+		;;
+	*)
+		echo "$(tput setaf 1)Error:$(tput sgr 0) Invalid option"
+		exit 1
+		;;
+	esac
+}
 if [[ "$EUID" -ne 0 ]]; then #Check root
 	echo "Please run this script as root"
 	exit 1
@@ -124,7 +172,8 @@ if [ -d "/etc/cloak" ]; then
 	echo "4) Show Connections for Shadowsocks Users"
 	echo "5) Change Forwarding Rules"
 	echo "6) Regenerate Firewall Rules"
-	echo "7) Uninstall Cloak"
+	echo "7) Update Cloak"
+	echo "8) Uninstall Cloak"
 	read -r -p "Please enter a number: " OPTION
 	cd /etc/cloak || exit 2
 	source ckport.txt
@@ -357,8 +406,32 @@ if [ -d "/etc/cloak" ]; then
 			echo "iptables-save"
 		fi
 		;;
-	#Uninstal cloak
+	#Update cloak
 	7)
+		PrintWarning "There is no guarantee that the next version of Cloak is backward compatible with the current version of it."
+		echo "You can check the release notes from https://github.com/cbeuw/Cloak/releases/"
+		read -r -p "Proceed with the update?(y/n) " OPTION
+		if [ "$OPTION" == "y" ] || [ "$OPTION" == "Y" ]; then
+			GetArch
+			#stop and remove
+			systemctl stop cloak-server
+			rm -f /usr/bin/ck-server
+			rm -f /usr/bin/ck-client
+			#download new binaries
+			url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
+			wget -O ck-server "$url"
+			chmod +x ck-server
+			mv ck-server /usr/bin
+			url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
+			wget -O ck-client "$url"
+			chmod +x ck-client
+			mv ck-client /usr/bin
+			systemctl restart cloak-server
+			echo "Done"
+		fi
+		;;
+	#Uninstal cloak
+	8)
 		read -r -p "I will also uninstall shadowsocks. But I will keep some packages like jq. Continue?(y/n) " OPTION
 		if [ "$OPTION" == "y" ] || [ "$OPTION" == "Y" ]; then
 			systemctl stop shadowsocks-libev
@@ -416,53 +489,7 @@ echo -e "Please enter a redirection IP and port for Cloak (leave blank to set it
 read -r -p "" ckwebaddr
 [ -z "$ckwebaddr" ] && ckwebaddr="204.79.197.200:443"
 #Check arch
-arch=$(uname -m)
-case $arch in
-"i386" | "i686") ;;
-
-"x86_64")
-	arch=2
-	;;
-*)
-	if [[ "$arch" =~ "armv" ]]; then
-		arch=${arch:4:1}
-		if [ "$arch" -gt 7 ]; then
-			arch=4
-		else
-			arch=3
-		fi
-	else
-		arch=0
-	fi
-	;;
-esac
-if [ "$arch" == "0" ]; then
-	arch=1
-	PrintWarning "Cannot automatically determine architecture."
-fi
-echo "1) 386"
-echo "2) amd64"
-echo "3) arm"
-echo "4) arm64"
-read -r -p "Select your architecture: " -e -i $arch arch
-case $arch in
-1)
-	arch="386"
-	;;
-2)
-	arch="amd64"
-	;;
-3)
-	arch="arm"
-	;;
-4)
-	arch="arm64"
-	;;
-*)
-	echo "$(tput setaf 1)Error:$(tput sgr 0) Invalid option"
-	exit 1
-	;;
-esac
+GetArch
 declare -A proxyBook
 #Setup shadowsocks itself
 read -r -p "Do you want to install Shadowsocks with Cloak plugin?(y/n) " -e -i "y" OPTION
