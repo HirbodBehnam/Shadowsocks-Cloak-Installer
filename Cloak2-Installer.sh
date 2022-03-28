@@ -205,6 +205,16 @@ WantedBy=multi-user.target" >/etc/systemd/system/shadowsocks-rust-server.service
 	systemctl restart shadowsocks-rust-server
 	systemctl enable shadowsocks-rust-server
 }
+function DownloadCloak() {
+	url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
+	wget -O ck-server "$url"
+	chmod +x ck-server
+	mv ck-server /usr/bin
+	url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
+	wget -O ck-client "$url"
+	chmod +x ck-client
+	mv ck-client /usr/bin
+}
 if [[ "$EUID" -ne 0 ]]; then #Check root
 	echo "Please run this script as root"
 	exit 1
@@ -465,14 +475,7 @@ if [ -d "/etc/cloak" ]; then
 			rm -f /usr/bin/ck-server
 			rm -f /usr/bin/ck-client
 			#download new binaries
-			url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
-			wget -O ck-server "$url"
-			chmod +x ck-server
-			mv ck-server /usr/bin
-			url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
-			wget -O ck-client "$url"
-			chmod +x ck-client
-			mv ck-client /usr/bin
+			DownloadCloak
 			systemctl restart cloak-server
 			echo "Done"
 		fi
@@ -540,7 +543,7 @@ declare -A proxyBook
 read -r -p "Do you want to install Shadowsocks with Cloak plugin?(y/n) " -e -i "y" OPTION
 if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
 	SHADOWSOCKS=true
-	ciphers=(rc4-md5 aes-128-gcm aes-192-gcm aes-256-gcm aes-128-cfb aes-192-cfb aes-256-cfb aes-128-ctr aes-192-ctr aes-256-ctr camellia-128-cfb camellia-192-cfb camellia-256-cfb bf-cfb chacha20-ietf-poly1305 xchacha20-ietf-poly1305 salsa20 chacha20 chacha20-ietf)
+	ciphers=(aes-128-gcm aes-256-gcm chacha20-ietf-poly1305)
 	#Get password
 	read -r -p "Enter a password for shadowsocks. Leave blank for a random password: " Password
 	if [ "$Password" == "" ]; then
@@ -548,20 +551,11 @@ if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
 		echo "$Password was chosen."
 	fi
 	#Get cipher
-	default_cipher=15
-	if [[ $distro =~ "Debian" ]] || [[ $distro =~ "Raspbian" ]]; then
-		ver=$(cat /etc/debian_version)
-		ver="${ver:0:1}"
-		if [ "$ver" == "8" ]; then
-			default_cipher=13
-			ciphers=(rc4-md5 aes-128-cfb aes-192-cfb aes-256-cfb aes-128-ctr aes-192-ctr aes-256-ctr bf-cfb camellia-128-cfb camellia-192-cfb camellia-256-cfb salsa20 chacha20)
-		fi
-	fi
 	echo
 	for ((i = 0; i < ${#ciphers[@]}; i++)); do
 		echo "$((i + 1))) ${ciphers[$i]}"
 	done
-	read -r -p "Enter the number of cipher you want to use: " -e -i $default_cipher cipher
+	read -r -p "Enter the number of cipher you want to use: " -e -i 3 cipher
 	if [ "$cipher" -lt 1 ] || [ "$cipher" -gt 18 ]; then
 		echo "$(tput setaf 1)Error:$(tput sgr 0) Invalid option"
 		exit 1
@@ -572,7 +566,8 @@ if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
 	echo "1) Cloudflare"
 	echo "2) Google"
 	echo "3) OpenDNS"
-	echo "4) Custom"
+	echo "4) AdGuard"
+	echo "5) Custom"
 	read -r -p "Which DNS server you want to use? " -e -i 1 ss_dns
 	case $ss_dns in
 	'1')
@@ -585,6 +580,9 @@ if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
 		ss_dns="208.67.222.222"
 		;;
 	'4')
+		ss_dns="94.140.14.14"
+		;;
+	'5')
 		read -r -p "Please enter your dns server address(One IP only): " -e -i "1.1.1.1" ss_dns
 		;;
 	*)
@@ -638,17 +636,7 @@ else
 	apt-get -y install wget jq curl
 fi
 #Install cloak
-#url="https://github.com/cbeuw/Cloak/releases/download/v2.0.2/ck-server-linux-$arch-2.0.2"
-#urlc="https://github.com/cbeuw/Cloak/releases/download/v2.0.2/ck-client-linux-$arch-2.0.2"
-url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-server-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
-wget -O ck-server "$url"
-chmod +x ck-server
-mv ck-server /usr/bin
-#Install cloak client for post install management
-url=$(wget -O - -o /dev/null https://api.github.com/repos/cbeuw/Cloak/releases/latest | grep "/ck-client-linux-$arch-" | grep -P 'https(.*)[^"]' -o)
-wget -O ck-client "$url"
-chmod +x ck-client
-mv ck-client /usr/bin
+DownloadCloak
 #Ok lets talk about this:
 Local_Address_Book_For_Admin="panel"
 #This is a id created for proxy book to make local admin connection though this script. Also the forwarding address will be 127.0.0.1:0; This port does not exist so it points out to nowhere and can be only used for admin panel
@@ -781,8 +769,6 @@ if [[ "$SHADOWSOCKS" == true ]]; then
 		yum -y install haveged qrencode
 	elif [[ $distro =~ "Ubuntu" ]] || [[ $distro =~ "Debian" ]] || [[ $distro =~ "Raspbian" ]]; then
 		apt-get -y install haveged qrencode
-	else
-		echo "Your system os is not supported. However, I will still try to install shadowsocks"
 	fi
 	# Setup shadowsocks
 	DownloadAndInstallSSRust
