@@ -164,11 +164,15 @@ function DownloadAndInstallSSRust() {
 	if [[ "$arch" == "386" ]]; then
 		SS_ARCH="i686-unknown-linux-musl"
 	elif [[ "$arch" == "amd64" ]]; then
-		SS_ARCH="x86_64-unknown-linux-gnu"
+		if [[ $distro =~ "CentOS" ]]; then # Centos uses glibc 2.17 which is very old
+			SS_ARCH="x86_64-unknown-linux-musl"
+		else
+			SS_ARCH="x86_64-unknown-linux-gnu"
+		fi
 	elif [[ "$arch" == "arm" ]]; then
-		SS_ARCH="aarch64-unknown-linux-gnu"
+		SS_ARCH="arm-unknown-linux-musleabi"
 	elif [[ "$arch" == "arm64" ]]; then
-		SS_ARCH="arm-unknown-linux-gnueabihf"
+		SS_ARCH="aarch64-unknown-linux-gnu"
 	fi
 	# Generate the download link
 	url=$(wget -O - -o /dev/null https://api.github.com/repos/shadowsocks/shadowsocks-rust/releases/latest | grep -E "/shadowsocks-v.+.$SS_ARCH.tar.xz\"" | grep -P 'https(.*)[^"]' -o)
