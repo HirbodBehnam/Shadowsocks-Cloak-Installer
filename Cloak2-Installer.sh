@@ -158,6 +158,53 @@ function GetArch(){
 		;;
 	esac
 }
+function DownloadAndInstallSSRust() {
+	# Convert the arch
+	local SS_ARCH
+	if [[ "$arch" == "386" ]]; then
+		SS_ARCH="i686-unknown-linux-musl"
+	elif [[ "$arch" == "amd64" ]]; then
+		SS_ARCH="x86_64-unknown-linux-gnu"
+	elif [[ "$arch" == "arm" ]]; then
+		SS_ARCH="aarch64-unknown-linux-gnu"
+	elif [[ "$arch" == "arm64" ]]; then
+		SS_ARCH="arm-unknown-linux-gnueabihf"
+	fi
+	# Generate the download link
+	url=$(wget -O - -o /dev/null https://api.github.com/repos/shadowsocks/shadowsocks-rust/releases/latest | grep -E "/shadowsocks-v.+.$SS_ARCH.tar.xz\"" | grep -P 'https(.*)[^"]' -o)
+	wget -O shadowsocks.tar.xz "$url"
+	tar xf shadowsocks.tar.xz -C /usr/bin/
+	rm shadowsocks.tar.xz
+	# Create the config
+	mkdir /etc/shadowsocks-rust
+	echo "{
+    \"server\":\"127.0.0.1\",
+    \"server_port\":$SS_PORT,
+    \"password\":\"$Password\",
+    \"timeout\":60,
+    \"method\":\"$cipher\",
+    \"nameserver\":\"$ss_dns\"
+}" >/etc/shadowsocks-rust/config.json
+	# Setup the service
+	echo "[Unit]
+Description=Shadowsocks-Rust Server Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+LimitNOFILE=32768
+ExecStart=/usr/bin/ssserver -c config.json
+WorkingDirectory=/etc/shadowsocks-rust
+
+[Install]
+WantedBy=multi-user.target" >/etc/systemd/system/shadowsocks-rust-server.service
+	systemctl daemon-reload
+	systemctl restart shadowsocks-rust-server
+	systemctl enable shadowsocks-rust-server
+}
 if [[ "$EUID" -ne 0 ]]; then #Check root
 	echo "Please run this script as root"
 	exit 1
@@ -255,8 +302,8 @@ if [ -d "/etc/cloak" ]; then
 				if [ $CURL_EXIT_STATUS -ne 0 ]; then
 					PUBLIC_IP="YOUR_IP"
 				fi
-				cipher=$(jq -r '.method' <'/etc/shadowsocks-libev/config.json')
-				Password=$(jq -r '.password' <'/etc/shadowsocks-libev/config.json')
+				cipher=$(jq -r '.method' <'/etc/shadowsocks-rust/config.json')
+				Password=$(jq -r '.password' <'/etc/shadowsocks-rust/config.json')
 				ckuid="$ckbuid"
 				ShowConnectionInfo
 			fi
@@ -347,8 +394,8 @@ if [ -d "/etc/cloak" ]; then
 		if [ $CURL_EXIT_STATUS -ne 0 ]; then
 			PUBLIC_IP="YOUR_IP"
 		fi
-		cipher=$(jq -r '.method' <'/etc/shadowsocks-libev/config.json')
-		Password=$(jq -r '.password' <'/etc/shadowsocks-libev/config.json')
+		cipher=$(jq -r '.method' <'/etc/shadowsocks-rust/config.json')
+		Password=$(jq -r '.password' <'/etc/shadowsocks-rust/config.json')
 		clear
 		ShowConnectionInfo
 		;;
@@ -360,7 +407,7 @@ if [ -d "/etc/cloak" ]; then
 		read -r -p "Choose by number: " OPTION
 		if [[ "$OPTION" == 1 ]]; then
 			read -r -p "Where the traffic should be forwarded?(For example 127.0.0.1:6252) " ADDRESS
-			PrintWarning "Please only use lowercase english characters in \"ProxyMethod\"."
+			PrintWarning "Please only use lowercase english characters in \"ProxyMethod\". This string must not be more than 12 characters."
 			read -r -p "What should this be called? Clients must use this name as \"ProxyMethod\" on their computers: " METHOD
 			if [[ ${#METHOD} -gt 12 ]]; then
 				echo "Please choose a method that is less than 12 characters"
@@ -432,27 +479,25 @@ if [ -d "/etc/cloak" ]; then
 		;;
 	#Uninstal cloak
 	8)
-		read -r -p "I will also uninstall shadowsocks. But I will keep some packages like jq. Continue?(y/n) " OPTION
+		read -r -p "I will also uninstall shadowsocks service (not the app). But I will keep some packages like jq. Continue?(y/n) " OPTION
 		if [ "$OPTION" == "y" ] || [ "$OPTION" == "Y" ]; then
-			systemctl stop shadowsocks-libev
-			systemctl disable shadowsocks-libev
+			systemctl stop shadowsocks-rust-server
+			systemctl disable shadowsocks-rust-server
 			systemctl stop cloak-server
 			systemctl disable cloak-server
 			rm /etc/systemd/system/cloak-server.service
+			rm /etc/systemd/system/shadowsocks-rust-server.service
 			systemctl daemon-reload
 			if [[ $distro =~ "CentOS" ]]; then
-				yum -y remove shadowsocks-libev
 				firewall-cmd --remove-port="$PORT"/tcp
 				firewall-cmd --permanent --remove-port="$PORT"/tcp
 			elif [[ $distro =~ "Ubuntu" ]]; then
-				apt-get -y remove shadowsocks-libev
 				ufw delete allow "$PORT"/tcp
 			elif [[ $distro =~ "Debian" ]] || [[ $distro =~ "Raspbian" ]]; then
-				apt-get -y remove shadowsocks-libev
 				iptables -D INPUT -p tcp --dport "$PORT" --jump ACCEPT
 				iptables-save >/etc/iptables/rules.v4
 			fi
-			rm -rf /etc/shadowsocks-libev
+			rm -rf /etc/shadowsocks-rust
 			rm -rf /etc/cloak
 			rm -f /usr/bin/ck-server
 			rm -f /usr/bin/ck-client
@@ -467,7 +512,7 @@ clear
 echo "Cloak installer by Hirbod Behnam"
 echo "Cloak at https://github.com/cbeuw/Cloak"
 echo "Source at https://github.com/HirbodBehnam/Shadowsocks-Cloak-Installer"
-echo "Shadowsocks-libev at https://github.com/shadowsocks/shadowsocks-libev"
+echo "Shadowsocks-rust at https://github.com/shadowsocks/shadowsocks-rust"
 echo
 echo
 #Get port
@@ -559,8 +604,7 @@ if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
 	echo "If you want to configure Tor with Cloak read here: https://github.com/cbeuw/Cloak/wiki/Underlying-proxy-configuration-guides#tor"
 	echo "If you have not installed the Openvpn or Tor yet, you can either choose a port for them here and install them later, or Ctrl+C here and go install them, then re-run the script again."
 	echo
-	PrintWarning "Please only use lowercase english characters in \"ProxyMethod\"."
-	PrintWarning "If you wish to add a UDP destination, at client you should run ck-client with \"-u\" argument."
+	PrintWarning "Please only use lowercase english characters in \"ProxyMethod\". This string must not be more than 12 characters."
 	while true; do
 		read -r -p "Where the traffic should be forwarded?(For example 127.0.0.1:6252) " ADDRESS
 		read -r -p "What should this be called? Clients must use this name as \"ProxyMethod\" on their computers: " METHOD
@@ -570,6 +614,7 @@ if [[ $OPTION == "y" ]] || [[ $OPTION == "Y" ]]; then
 		fi
 		read -r -p "Is this a TCP connection?(y/n): " -e -i "y" OPTION
 		if [[ $OPTION == "n" ]] || [[ $OPTION == "N" ]]; then
+			PrintWarning "At client you should run ck-client with \"-u\" argument in order to enable UDP."
 			ADDRESS=d$ADDRESS
 		else
 			ADDRESS=t$ADDRESS
@@ -731,62 +776,16 @@ elif [[ $distro =~ "Debian" ]] || [[ $distro =~ "Raspbian" ]]; then
 fi
 #Install and setup shadowsocks
 if [[ "$SHADOWSOCKS" == true ]]; then
+	# Install aftermath dependecies
 	if [[ $distro =~ "CentOS" ]]; then
-		yum -y install yum-utils
-		yum-config-manager --add-repo https://copr.fedorainfracloud.org/coprs/librehat/shadowsocks/repo/epel-7/librehat-shadowsocks-epel-7.repo
-		yum -y install shadowsocks-libev haveged qrencode
-	elif [[ $distro =~ "Ubuntu" ]]; then
-		if [[ $(lsb_release -r -s) =~ "18" ]] || [[ $(lsb_release -r -s) =~ "19" ]] || [[ $(lsb_release -r -s) =~ "20" ]]; then
-			apt update
-			apt -y install shadowsocks-libev haveged qrencode
-		else
-			apt-get install software-properties-common -y
-			add-apt-repository ppa:max-c-lv/shadowsocks-libev -y
-			apt-get update
-			apt-get -y install shadowsocks-libev haveged qrencode
-		fi
-	elif [[ $distro =~ "Debian" ]]; then
-		ver=$(cat /etc/debian_version)
-		ver="${ver%.*}"
-		if [ "$ver" == "8" ]; then
-			sh -c 'printf "deb [check-valid-until=no] http://archive.debian.org/debian jessie-backports main\n" > /etc/apt/sources.list.d/jessie-backports.list' #https://unix.stackexchange.com/a/508728/331589
-			echo "Acquire::Check-Valid-Until \"false\";" >>/etc/apt/apt.conf
-			apt-get update
-			apt -y -t jessie-backports install shadowsocks-libev haveged qrencode
-		elif [ "$ver" == "9" ]; then
-			sh -c 'printf "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list'
-			apt update
-			apt -t stretch-backports install shadowsocks-libev haveged qrencode
-		elif [ "$ver" == "10" ]; then
-			sh -c 'printf "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/buster-backports.list'
-			apt update
-			apt -t buster-backports install shadowsocks-libev haveged qrencode
-		else
-			echo "Your debian is too old!"
-			exit 2
-		fi
-	elif [[ $distro =~ "Raspbian" ]]; then
-		apt update
-		apt -y install shadowsocks-libev haveged qrencode
+		yum -y install haveged qrencode
+	elif [[ $distro =~ "Ubuntu" ]] || [[ $distro =~ "Debian" ]] || [[ $distro =~ "Raspbian" ]]; then
+		apt-get -y install haveged qrencode
 	else
-		echo "Your system is not supported"
-		exit 2
+		echo "Your system os is not supported. However, I will still try to install shadowsocks"
 	fi
-	#Start haveged
-	systemctl start haveged
-	systemctl enable haveged
-	#Config shadowsocks
-	echo "{
-    \"server\":\"127.0.0.1\",
-    \"server_port\":$SS_PORT,
-    \"password\":\"$Password\",
-    \"timeout\":60,
-    \"method\":\"$cipher\",
-    \"nameserver\":\"$ss_dns\"
-}" >/etc/shadowsocks-libev/config.json
-	systemctl daemon-reload
-	systemctl restart shadowsocks-libev
-	systemctl enable shadowsocks-libev
+	# Setup shadowsocks
+	DownloadAndInstallSSRust
 	#Show keys server and...
 	PUBLIC_IP="$(curl https://api.ipify.org -sS)"
 	CURL_EXIT_STATUS=$?
