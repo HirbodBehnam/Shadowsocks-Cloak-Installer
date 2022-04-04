@@ -59,7 +59,7 @@ function WriteClientFile() {
 	\"NumConn\":4,
 	\"BrowserSig\":\"chrome\",
 	\"StreamTimeout\": 300
-}" >>"$ckclient_name.json"
+}" >"$ckclient_name.json"
 }
 function ListAllUIDs() {
 	#At first list all of the unrestricted users
@@ -435,6 +435,15 @@ if [ -d "/etc/cloak" ]; then
 			fi
 			conf=$(jq --arg m "$METHOD" --arg a "$ADDRESS" --arg p "$PROTOCOL" '.ProxyBook[$m] = [$p,$a]' ckserver.json)
 			echo "$conf" > ckserver.json
+			# Add client file
+			ckmethod="$METHOD"
+			ckclient_name="$METHOD"
+			ckcrypt="aes-128-gcm" # Play it safe
+			ckwebaddr="www.bing.com" # Usually fine
+			ckpub=$(jq -r '.PublicKey' ckadminclient.json)
+			ckbuid=$(jq -r .BypassUID[1] ckserver.json) # Do not get the admin panel one
+			WriteClientFile
+			echo "I also created a client file sample in /etc/cloak/$METHOD.json. You might want to change it's UID..."
 		elif [[ "$OPTION" == 2 ]]; then
 			mapfile -t Rules < <(jq -r '.ProxyBook | keys[]' ckserver.json)
 			COUNTER=1
@@ -442,7 +451,7 @@ if [ -d "/etc/cloak" ]; then
 				echo "$COUNTER) $i"
 				COUNTER=$((COUNTER + 1))
 			done
-			read -r -p "Which UID you want to see it's link?(Choose by number) " OPTION
+			read -r -p "Which rule you want to delete? (Choose by number) " OPTION
 			OPTION=$((OPTION - 1))
 			OPTION=${Rules[OPTION]}
 			if [[ "$OPTION" == "panel" ]]; then
@@ -451,6 +460,7 @@ if [ -d "/etc/cloak" ]; then
 			fi
 			conf=$(jq --arg k "$OPTION" 'del(.ProxyBook[$k])' ckserver.json)
 			echo "$conf" >ckserver.json
+			rm "$OPTION.json"
 		fi
 		systemctl restart cloak-server
 		echo "Done"
