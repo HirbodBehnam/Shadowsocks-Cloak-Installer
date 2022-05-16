@@ -647,6 +647,7 @@ if [[ $distro =~ "CentOS" ]]; then
 	yum -y install epel-release
 	yum -y install wget jq curl
 else
+	apt-get update
 	apt-get -y install wget jq curl
 fi
 #Install cloak
