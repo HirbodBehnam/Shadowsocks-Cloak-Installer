@@ -455,7 +455,7 @@ elif [[ $distro =~ "Debian" ]]; then
 		sh -c 'printf "deb http://deb.debian.org/debian stretch-backports main" > /etc/apt/sources.list.d/stretch-backports.list'
 		apt update
 		apt -t stretch-backports install shadowsocks-libev
-	elif [ "$ver" == "10" ]; then
+	elif [ "$ver" == "10" ] || [ "$ver" == "11" ]; then
 		sh -c 'printf "deb http://deb.debian.org/debian buster-backports main" > /etc/apt/sources.list.d/stretch-backports.list'
 		apt update
 		apt -t buster-backports install shadowsocks-libev
