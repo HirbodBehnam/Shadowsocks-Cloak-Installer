@@ -187,7 +187,8 @@ function DownloadAndInstallSSRust() {
     \"password\":\"$Password\",
     \"timeout\":60,
     \"method\":\"$cipher\",
-    \"nameserver\":\"$ss_dns\"
+    \"ipv6_first\":true,
+    \"dns\":\"$ss_dns\"
 }" >/etc/shadowsocks-rust/config.json
 	# Setup the service
 	echo "[Unit]
