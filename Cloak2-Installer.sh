@@ -650,10 +650,10 @@ fi
 #Install some stuff
 if [[ $distro =~ "CentOS" ]]; then
 	yum -y install epel-release
-	yum -y install wget jq curl
+	yum -y install wget jq curl xz
 else
 	apt-get update
-	apt-get -y install wget jq curl
+	apt-get -y install wget jq curl xz-utils
 fi
 #Install cloak
 DownloadCloak
