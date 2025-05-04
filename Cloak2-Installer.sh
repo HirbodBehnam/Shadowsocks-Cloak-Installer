@@ -103,7 +103,11 @@ function ShowConnectionInfo() {
 	ckuid=$(echo "$ckuid" | sed -r 's/=/\\=/g')
 	SERVER_BASE64=$(printf "%s" "$cipher:$Password" | base64)
 	SERVER_CLOAK_ARGS="ck-client;UID=$ckuid;PublicKey=$ckpub;ServerName=bing.com;BrowserSig=chrome;NumConn=4;ProxyMethod=shadowsocks;EncryptionMethod=plain;StreamTimeout=300"
-	SERVER_CLOAK_ARGS=$(printf "%s" "$SERVER_CLOAK_ARGS" | curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-) #https://stackoverflow.com/a/10797966/4213397
+ 
+	# https://stackoverflow.com/a/10797966/4213397
+  	# Oneliner updated for curl 7.88.1
+   	# Note that in the post a semicolon at the end of the curl command is missing. I have added it here.
+	SERVER_CLOAK_ARGS=$(printf "%s" "$SERVER_CLOAK_ARGS" | { curl -Gs -w %{url_effective} --data-urlencode @- ./ ||:; } | sed "s/%0[aA]$//;s/^[^?]*?\(.*\)/\1/") 
 	SERVER_BASE64="ss://$SERVER_BASE64@$PUBLIC_IP:$PORT?plugin=$SERVER_CLOAK_ARGS"
 	qrencode -t ansiutf8 "$SERVER_BASE64"
 	echo
@@ -646,10 +650,10 @@ fi
 #Install some stuff
 if [[ $distro =~ "CentOS" ]]; then
 	yum -y install epel-release
-	yum -y install wget jq curl
+	yum -y install wget jq curl xz
 else
 	apt-get update
-	apt-get -y install wget jq curl
+	apt-get -y install wget jq curl xz-utils
 fi
 #Install cloak
 DownloadCloak
